@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-    const char *dev_path = "/dev/input/event1"; // Path to keyboard device file
+    const char *dev_path = "/dev/input/event0"; // Path to keyboard device file
     int fd = open(dev_path, O_RDONLY);
     if (fd < 0) {
         std::cerr << "Could not open device file." << std::endl;

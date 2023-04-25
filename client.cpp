@@ -31,6 +31,7 @@ class USER_TAG : protected USER
 public:
 	void main_menu(int argc, char *argv[]);
 	void chat(int argc, char *argv[]);
+	bool receiveMessage(int &clientSd , int &bytesRead , int &bytesWritten);
 } u_t;
 
 void USER_TAG::main_menu(int argc, char *argv[])
@@ -41,6 +42,30 @@ void USER_TAG::main_menu(int argc, char *argv[])
 	cout << "\n\t\t\t\t\t ******* MAIN MENU *******";
 	cout << "\n\t\t\t\t\t *************************\n";
 	chat(argc, argv);
+}
+
+bool USER_TAG::receiveMessage(int &clientSd , int &bytesRead , int &bytesWritten)
+{
+	char msg[100];
+	while (1)
+	{
+		//receive multiple messages
+		fflush(stdin);
+		cout << "\nServer: \n";
+		fflush(stdin);
+
+		
+		memset(&msg, 0, sizeof(msg));
+		bytesRead += recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
+		
+		cout << msg << " " << strlen(msg) << "\n";
+		if (!strcmp(msg, "exit"))								   // check if the message equals "exit" then exit
+		{
+			cout << "--------------------------------------" << endl;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void USER_TAG::chat(int argc, char *argv[])
@@ -71,12 +96,11 @@ void USER_TAG::chat(int argc, char *argv[])
 
 	// take the message
 	int bytesRead, bytesWritten = 0, n = 0;
-	char buff[80];
 	struct timeval start1, end1;
 	gettimeofday(&start1, NULL);
 	int c = 1;
 	// create a message buffer
-	char msg[100];
+	char msg[100] , buff[100];
 	while (1)
 	{
 		// get the message from keyboard
@@ -99,14 +123,10 @@ void USER_TAG::chat(int argc, char *argv[])
 		}
 
 		bytesWritten += send(clientSd, (char *)&msg, strlen(msg), 0);
-		memset(&msg, 0, sizeof(msg));
-		bytesRead += recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
-		if (!strcmp(msg, "exit"))								   // check if the message equals "exit" then exit
-		{
-			cout << "##### Server has quit the session" << endl;
-			break;
-		}
-		cout << "\n Server: " << msg << endl;
+
+		receiveMessage(clientSd , bytesRead , bytesWritten);
+
+		
 	}
 
 	gettimeofday(&end1, NULL);

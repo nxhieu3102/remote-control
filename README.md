@@ -16,4 +16,4 @@ Client will ask to process in server's system:
     + 2 : Vector of string that saves the information of installed programs
     + 3 : Image (file .png, .JPEG, ...)
     + 4 : Every characters on the keyboard from 'start command' to 'end command'
-    + 5 : 
+    + 5 : Vector of string that saves the tree path

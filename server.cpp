@@ -18,9 +18,13 @@
 using namespace std;
 // Server side
 
+sockaddr_in newSockAddr;
+socklen_t newSockAddrSize = sizeof(newSockAddr);
+
 vector<string> getInstalledApp(int &newSd)
 {
-    system("apt-mark showmanual"); //list all the packages installed by users
+    // system("apt-mark showmanual"); //list all the packages installed by users
+    // system("sudo find / -type f -name \"*.sh\" -executable"); //list all file ".sh" ==> which files to install app
     // "apt-mark showmanual" //packages installed by users
     // "apt-mark showauto" //packages installed automatically
 
@@ -67,17 +71,18 @@ vector<string> getRunningProcess(int &newSd)
     return process;
 }
 
-bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten , char *msg)
+bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten)
 {
     // receive a message from the client (listen)
     fflush(stdin);
     cout << "\n\n Awaiting Client Response.";
     fflush(stdin);
+    char msg[100];
 
     memset(&msg, 0, sizeof(msg)); // clear the buffer
     bytesRead += recv(newSd, (char *)&msg, sizeof(msg), 0);
     msg[strlen(msg)-1] = '\0';
-    // cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
+    cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
     if (!strcmp(msg, "exit"))
     {
         cout << " ##### Client has quit the session." << endl;
@@ -87,31 +92,40 @@ bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten , char *msg)
     cout << "-----------------------------------";
     if(!strcmp(msg, "1"))
     {
+        cout << "\n Client: List running processes";
         vector<string> res = getRunningProcess(newSd);
         for (int i = 0 ; i < (int)res.size() ; i ++) {
-            cout << res[i] << "\n";
+            // memset(&msg, 0, sizeof(msg));
+            strcpy(msg , res[i].c_str());
+            cout << msg << "\n";
+            bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
         }
     }
     else if(!strcmp(msg, "2"))
     {
+        cout << "\n Client: List installed applications";
         vector<string> res = getInstalledApp(newSd);
         for (int i = 0 ; i < (int)res.size() ; i ++) {
-            cout << res[i] << "\n";
+            memset(&msg, 0, sizeof(msg));
+            strcpy(msg , res[i].c_str());
+            bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
         }
     }
     else if(!strcmp(msg, "3"))
     {
-
+        cout << "\n Client: 3";
     }
     else if(!strcmp(msg, "4"))
     {
-
+        cout << "\n Client: 4";
     }
     else //if(!strcmp(msg, "2"))
     {
-
+        cout << "\n Client: 5";
     }
     
+    strcpy(msg , "exit");
+    bytesWritten += send(newSd, &msg, strlen(msg), 0);
     
     return 1;
 }
@@ -159,12 +173,11 @@ int main(int argc, char *argv[])
     listen(serverSd, 5);
     // receive a request from client using accept
     // we need a new address to connect with the client
-    sockaddr_in newSockAddr;
-    socklen_t newSockAddrSize = sizeof(newSockAddr);
+    
 
     // accept, create a new socket descriptor to handle the new connection with client
     int newSd = accept(serverSd, (sockaddr *)&newSockAddr, &newSockAddrSize);
-    cout << newSd << "\n";
+    // cout << newSd << "\n";
     if (newSd < 0)
     {
         cerr << "\n\n ##### Error accepting request from client." << endl;
@@ -177,27 +190,28 @@ int main(int argc, char *argv[])
     gettimeofday(&start1, NULL);
 
     // also keep track of the amount of data sent as well
+    // cout << "S";
     int bytesRead = 0, bytesWritten = 0;
     while (1)
     {
-        if(receiveMessage(newSd , bytesRead , bytesWritten , msg) == 0)
+        // cout << "SS\n";
+        if(receiveMessage(newSd , bytesRead , bytesWritten) == 0)
             break;
             
-        cout << "\n Client: " << msg;
-        cout << "\n\t\t Server: ";
-        string data;
-        getline(cin, data);
-        memset(&msg, 0, sizeof(msg)); // clear the buffer
-        strcpy(msg, data.c_str());
+        // cout << "\n\t\t Server: ";
+        // string data;
+        // getline(cin, data);
+        // memset(&msg, 0, sizeof(msg)); // clear the buffer
+        // strcpy(msg, data.c_str());
 
-        if (data == "exit")
-        {
-            // send to the client that server has closed the connection
-            send(newSd, (char *)&msg, strlen(msg), 0);
-            break;
-        }
+        // if (data == "exit")
+        // {
+        //     // send to the client that server has closed the connection
+        //     send(newSd, (char *)&msg, strlen(msg), 0);
+        //     break;
+        // }
         // send the message to client
-        bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
+        // bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
     }
 
     // we need to close the socket descriptors after we're all done
