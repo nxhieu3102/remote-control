@@ -15,11 +15,10 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <fstream>
+#include <chrono>
+#include <thread>
 using namespace std;
 // Server side
-
-sockaddr_in newSockAddr;
-socklen_t newSockAddrSize = sizeof(newSockAddr);
 
 vector<string> getInstalledApp(int &newSd)
 {
@@ -49,7 +48,7 @@ vector<string> getInstalledApp(int &newSd)
 }
 vector<string> getRunningProcess(int &newSd)
 {
-    system("ps -ef | grep -v '\\[.*\\]'"); //list all the running process 
+    // system("ps -ef | grep -v '\\[.*\\]'"); //list all the running process 
 
     vector<string> process;
     FILE* pipe = popen("ps -ef | grep -v '\\[.*\\]'", "r");
@@ -77,28 +76,31 @@ bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten)
     fflush(stdin);
     cout << "\n\n Awaiting Client Response.";
     fflush(stdin);
-    char msg[100];
+    char msg[300];
 
     memset(&msg, 0, sizeof(msg)); // clear the buffer
     bytesRead += recv(newSd, (char *)&msg, sizeof(msg), 0);
     msg[strlen(msg)-1] = '\0';
-    cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
-    if (!strcmp(msg, "exit"))
+    // cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
+
+    if (!strcmp(msg, "exit") || strlen(msg) == 0)
     {
         cout << " ##### Client has quit the session." << endl;
         return 0;
     }
 
-    cout << "-----------------------------------";
+    cout << "\n-----------------------------------";
     if(!strcmp(msg, "1"))
     {
         cout << "\n Client: List running processes";
         vector<string> res = getRunningProcess(newSd);
         for (int i = 0 ; i < (int)res.size() ; i ++) {
-            // memset(&msg, 0, sizeof(msg));
+            // cout << res[i].size() << "\n";
+            memset(&msg, 0, sizeof(msg));
             strcpy(msg , res[i].c_str());
-            cout << msg << "\n";
+            // cout << msg << "\n";
             bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5)); //sleep to split the message
         }
     }
     else if(!strcmp(msg, "2"))
@@ -106,9 +108,12 @@ bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten)
         cout << "\n Client: List installed applications";
         vector<string> res = getInstalledApp(newSd);
         for (int i = 0 ; i < (int)res.size() ; i ++) {
+            // cout << res[i].size() << "\n";
             memset(&msg, 0, sizeof(msg));
             strcpy(msg , res[i].c_str());
+            // cout << msg << "\n";
             bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
     else if(!strcmp(msg, "3"))
@@ -124,7 +129,9 @@ bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten)
         cout << "\n Client: 5";
     }
     
+    memset(msg , 0 , sizeof msg);
     strcpy(msg , "exit");
+    // cout << msg << " " << strlen(msg);
     bytesWritten += send(newSd, &msg, strlen(msg), 0);
     
     return 1;
@@ -173,7 +180,8 @@ int main(int argc, char *argv[])
     listen(serverSd, 5);
     // receive a request from client using accept
     // we need a new address to connect with the client
-    
+    sockaddr_in newSockAddr;
+    socklen_t newSockAddrSize = sizeof(newSockAddr);
 
     // accept, create a new socket descriptor to handle the new connection with client
     int newSd = accept(serverSd, (sockaddr *)&newSockAddr, &newSockAddrSize);
@@ -198,20 +206,6 @@ int main(int argc, char *argv[])
         if(receiveMessage(newSd , bytesRead , bytesWritten) == 0)
             break;
             
-        // cout << "\n\t\t Server: ";
-        // string data;
-        // getline(cin, data);
-        // memset(&msg, 0, sizeof(msg)); // clear the buffer
-        // strcpy(msg, data.c_str());
-
-        // if (data == "exit")
-        // {
-        //     // send to the client that server has closed the connection
-        //     send(newSd, (char *)&msg, strlen(msg), 0);
-        //     break;
-        // }
-        // send the message to client
-        // bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
     }
 
     // we need to close the socket descriptors after we're all done

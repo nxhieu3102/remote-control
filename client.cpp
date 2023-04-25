@@ -46,19 +46,27 @@ void USER_TAG::main_menu(int argc, char *argv[])
 
 bool USER_TAG::receiveMessage(int &clientSd , int &bytesRead , int &bytesWritten)
 {
-	char msg[100];
+	char msg[300];
+	
+	cout << "\nServer: \n";
 	while (1)
 	{
 		//receive multiple messages
-		fflush(stdin);
-		cout << "\nServer: \n";
-		fflush(stdin);
+		// fflush(stdin);
 
 		
 		memset(&msg, 0, sizeof(msg));
-		bytesRead += recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
 		
-		cout << msg << " " << strlen(msg) << "\n";
+		int byteRecv = recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
+		if(byteRecv == 0)
+			return 0;
+
+		bytesRead += byteRecv;
+		fflush(stdin);
+		cout << strlen(msg) << "\n";
+		cout << msg << "\n";
+		fflush(stdin);
+
 		if (!strcmp(msg, "exit"))								   // check if the message equals "exit" then exit
 		{
 			cout << "--------------------------------------" << endl;
@@ -104,7 +112,7 @@ void USER_TAG::chat(int argc, char *argv[])
 	while (1)
 	{
 		// get the message from keyboard
-		fflush(stdin);
+		// fflush(stdin);
 		c++;
 		cout << "\n\t\t Client: ";
 		// string data;
@@ -124,7 +132,8 @@ void USER_TAG::chat(int argc, char *argv[])
 
 		bytesWritten += send(clientSd, (char *)&msg, strlen(msg), 0);
 
-		receiveMessage(clientSd , bytesRead , bytesWritten);
+		if(strlen(msg) == 0 || receiveMessage(clientSd , bytesRead , bytesWritten) == 0)
+			break;
 
 		
 	}
