@@ -1,6 +1,8 @@
 How to run project:
+
 --> Run server first
 >> g++ server.cpp -o server; ./server 8080
+
 --> Next, run client
 >> g++ client.cpp -o client; ./client <your local ip> 8080
 
