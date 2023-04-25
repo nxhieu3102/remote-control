@@ -1,3 +1,9 @@
+How to run project:
+--> Run server first
+>> g++ server.cpp -o server; ./server 8080
+--> Next, run client
+>> g++ client.cpp -o client; ./client <your local ip> 8080
+
 1. client sends request to server
 2. server does the request and gets data 
 3. server sends data to client
