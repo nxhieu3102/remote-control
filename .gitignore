@@ -1,3 +1,4 @@
 # ignore ALL .log files
 *
-*.vscode  
+*.vscode
+test.cpp
