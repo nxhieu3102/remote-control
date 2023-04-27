@@ -1,10 +1,10 @@
 How to run project:
 
 --> Run server first
->> g++ server.cpp -o server; ./server 8080
+>> g++ -pthread SERVER/*.cpp -o server; ./server 8080
 
 --> Next, run client
->> g++ client.cpp -o client; ./client <"your local ip"> 8080
+>> g++ -pthread CLIENT/*.cpp -o client -lncurses; ./client <"your local ip"> 8080
 
 1. client sends request to server
 2. server does the request and gets data 
@@ -27,3 +27,4 @@ Client will ask to process in server's system:
     + 3 : Image (file .png, .JPEG, ...)
     + 4 : Every characters on the keyboard from 'start command' to 'end command'
     + 5 : Vector of string that saves the tree path
+

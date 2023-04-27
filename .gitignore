@@ -1,4 +1,6 @@
-# ignore ALL .log files
-*
 *.vscode
+
 test.cpp
+client
+server
+test
