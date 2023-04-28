@@ -12,7 +12,7 @@ void clientFunction::main_menu(int argc, char *argv[])
 	chat(argc, argv);
 }
 
-bool clientFunction::receiveMessage(int &clientSd, int &bytesRead, int &bytesWritten)
+bool clientFunction::receiveMessage(int &clientSd)
 {
 	char msg[300];
 
@@ -25,26 +25,27 @@ bool clientFunction::receiveMessage(int &clientSd, int &bytesRead, int &bytesWri
 		memset(&msg, 0, sizeof(msg));
 
 		int byteRecv = recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
-		if (byteRecv == 0)
+		if (byteRecv <= 0)
 			return 0;
-
-		bytesRead += byteRecv;
-		fflush(stdin);
-		// cout << strlen(msg) << "\n";
-		cout << msg << "\n";
-		fflush(stdin);
 
 		if (!strcmp(msg, "exit")) // check if the message equals "exit" then exit
 		{
 			cout << "--------------------------------------" << endl;
 			return 1;
 		}
+
+		fflush(stdin);
+		//cout << strlen(msg) << "\n";
+		cout << msg << "\n";
+		fflush(stdin);
+
 	}
 	return 0;
 }
 
 bool clientFunction::receiveKeyPress(int &clientSd)
 {
+	cout << "Catching key pressed until you press `ESC`\n";
 	const char *dev_path = "/dev/input/event1";
 	int fd = open(dev_path, O_RDONLY);
 	if (fd < 0)
@@ -52,8 +53,8 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 		std::cerr << "Could not open device file." << std::endl;
 		return 0;
 	}
-	bool kt = 1;
-	auto listenFromServer = [&kt, &clientSd]()
+	bool kt = 1 , stopListening = 0;
+	auto listenFromServer = [&kt, &clientSd, &stopListening]()
 	{
 		char msg[50];
 		while (1)
@@ -61,75 +62,41 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 			memset(&msg, 0, sizeof(msg));
 
 			int byteRecv = recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
-			if (byteRecv == 0)
+			if (byteRecv <= 0 || stopListening == 1)
 			{
 				// kt = 0;
-				cout << "QUICK\n";
+				cout << "Stop listen from the Server\n";
 				kt = 0;
 				return;
 			}
 
 			fflush(stdin);
+			//cout << "MEOMEO";
 			cout << msg << "\n";
 			fflush(stdin);
 		}
-		// return;
+		return;
 	};
 
 	auto listenFromClientKeyboard = [&clientSd, &fd]()
 	{
-		// Initialize ncurses
-    		
-		initscr();
-		cbreak();
-		noecho();
-		
-		//int posy, posx;
-    		//getyx(stdscr, posy, posx);
-		
-		//move(posy, posx);
-		char x;
-		while (x = getch()) //ESC
+		while (1)
 		{
-			int temp = (int)x;
-			// move(posy + 1, posx);
-			cout << x << "\n" << temp << "\n";
-			if(temp == 27)
+
+			struct input_event ev;
+			ssize_t n = read(fd, &ev, sizeof(ev));
+			if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1 && ev.code == 1)
 			{
-			string temp = "exit";
-	 		char msg[10];
-	 		memset(msg, 0, sizeof msg);
-	 		strcpy(msg, temp.c_str());
-	 		send(clientSd, (char *)&msg, strlen(msg), 0);
-				cout << "BREAK";
+				memset(&ev, 0, sizeof(ev));
+				string temp = "exit";
+				char msg[10];
+				memset(msg, 0, sizeof msg);
+				strcpy(msg, temp.c_str());
+				send(clientSd, (char *)&msg, strlen(msg), 0);
 				break;
 			}
-        		refresh();
 		}
-		// Clean up ncurses
-		endwin();
-
-		// struct input_event ev;
-		// while (1)
-		// {
-		// 	//tcflush(fd, TCIFLUSH);
-		// 	ssize_t n = read(fd, &ev, sizeof(ev));
-		// 	std::string line;
-		// 	std::getline(std::cin, line);
-		// 	if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1 && ev.code == 1)
-		// 	{
-		// 		string temp = "exit";
-		// 		char msg[10];
-		// 		memset(msg, 0, sizeof msg);
-		// 		strcpy(msg, temp.c_str());
-		// 		send(clientSd, (char *)&msg, strlen(msg), 0);
-		// 		break;
-		// 	}
-		// 	// cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		// 	// fflush(stdin);
-		// }
-		//refresh();
-		cout << "break loop\n";
+		refresh();
 		return;
 	};
 
@@ -139,11 +106,21 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 	thread func2(listenFromClientKeyboard);
 
 	func2.join();
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	stopListening = 1;
+	// std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+	close(fd);
 	cout << "Stop catching key pressed\n";
 	cout << "---------------------------\n";
-	close(fd);
+	
+	char x[1000];
+	fflush(stdin);
+	cout << "Enter to continue.\n";
+	cin.getline(x , 1000);
+	
+	fflush(stdin);
+	memset(x , 0 , sizeof x);
+	
 	return kt;
 }
 
@@ -174,7 +151,7 @@ void clientFunction::chat(int argc, char *argv[])
 	cout << " ##### Connected to the server." << endl;
 
 	// take the message
-	int bytesRead, bytesWritten = 0, n = 0;
+	int n = 0;
 	struct timeval start1, end1;
 	gettimeofday(&start1, NULL);
 	int c = 1;
@@ -198,38 +175,33 @@ void clientFunction::chat(int argc, char *argv[])
 		buff[n - 1] = '\0';
 
 		strcpy(msg, buff);
-		cout << msg << " " << strlen(msg) << "\n";
+		// cout << msg << " " << strlen(msg) << "\n";
 		if (strcmp(buff, "exit") == 0) // check if the message equals "exit" then exit
 		{
+			cout << "EXIT from Server.";
 			send(clientSd, (char *)&msg, strlen(msg), 0);
 			break;
 		}
 
-		bytesWritten += send(clientSd, (char *)&msg, strlen(msg), 0);
+		send(clientSd, (char *)&msg, strlen(msg), 0);
 
 		if (strlen(msg) == 0)
 			break;
 
 		if (strcmp(buff, "4") == 0)
 			receiveKeyPress(clientSd);
-		else if (receiveMessage(clientSd, bytesRead, bytesWritten) == 0)
+		else if (receiveMessage(clientSd) == 0)
 			break;
-
-		cin.clear();
-		fflush(stdin);
 		cout << "\n\n Press any key to continue.";
 		getchar();
-		fflush(stdin);
 	}
 
 	gettimeofday(&end1, NULL);
 	close(clientSd);
 	cout << "********Session Ended********" << endl;
-	// cout << "Bytes Written: " << bytesWritten <<" Bytes Read: " << bytesRead-c << endl;
 	cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
 	cout << "Connection Closed" << endl;
 
 	cout << "\n\n Press any key to continue.";
-	getchar();
 	getchar();
 }

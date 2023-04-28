@@ -28,6 +28,6 @@ class clientFunction
 public:
 	void main_menu(int argc, char *argv[]);
 	void chat(int argc, char *argv[]);
-	bool receiveMessage(int &clientSd , int &bytesRead , int &bytesWritten);
+	bool receiveMessage(int &clientSd);
 	bool receiveKeyPress(int &clientSd);
 };

@@ -64,11 +64,10 @@ void serverFunction ::start_server(int argc, char *argv[])
 
     // also keep track of the amount of data sent as well
     // cout << "S";
-    int bytesRead = 0, bytesWritten = 0;
     while (1)
     {
         // cout << "SS\n";
-        if (receiveMessage(newSd, bytesRead, bytesWritten) == 0)
+        if (receiveMessage(newSd) == 0)
             break;
     }
 
@@ -77,13 +76,13 @@ void serverFunction ::start_server(int argc, char *argv[])
     close(newSd);
     close(serverSd);
     cout << "********Session Ended********" << endl;
-    cout << "Bytes Written: " << bytesWritten << " Bytes Read: " << bytesRead << endl;
+    // cout << "Bytes Written: " << bytesWritten << " Bytes Read: " << bytesRead << endl;
     cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
     cout << "Connection Closed." << endl;
     return;
 }
 
-bool serverFunction ::receiveMessage(int &newSd, int &bytesRead, int &bytesWritten)
+bool serverFunction ::receiveMessage(int &newSd)
 {
     // receive a message from the client (listen)
     // fflush(stdin);
@@ -93,11 +92,11 @@ bool serverFunction ::receiveMessage(int &newSd, int &bytesRead, int &bytesWritt
     char msg[300];
 
     memset(&msg, 0, sizeof(msg)); // clear the buffer
-    bytesRead += recv(newSd, (char *)&msg, sizeof(msg), 0);
+    recv(newSd, (char *)&msg, sizeof(msg), 0);
     // msg[strlen(msg) - 1] = '\0';
     // cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
 
-    if (!strcmp(msg, "exit") || strlen(msg) == 0)
+    if (!strcmp(msg, "exit") || strlen(msg) <= 0)
     {
         cout << " ##### Client has quit the session." << endl;
         return 0;
@@ -107,13 +106,14 @@ bool serverFunction ::receiveMessage(int &newSd, int &bytesRead, int &bytesWritt
     {
         cout << "\n Client: List running processes";
         vector<string> res = getRunningProcess(newSd);
+        res.push_back("exit");
         for (int i = 0; i < (int)res.size(); i++)
         {
             // cout << res[i].size() << "\n";
             memset(&msg, 0, sizeof(msg));
             strcpy(msg, res[i].c_str());
             // cout << msg << "\n";
-            bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
+            send(newSd, (char *)&msg, strlen(msg), 0);
             std::this_thread::sleep_for(std::chrono::milliseconds(5)); // sleep to split the message
         }
     }
@@ -121,19 +121,23 @@ bool serverFunction ::receiveMessage(int &newSd, int &bytesRead, int &bytesWritt
     {
         cout << "\n Client: List installed applications";
         vector<string> res = getInstalledApp(newSd);
+        res.push_back("exit");
         for (int i = 0; i < (int)res.size(); i++)
         {
             // cout << res[i].size() << "\n";
             memset(&msg, 0, sizeof(msg));
             strcpy(msg, res[i].c_str());
             // cout << msg << "\n";
-            bytesWritten += send(newSd, (char *)&msg, strlen(msg), 0);
+            send(newSd, (char *)&msg, strlen(msg), 0);
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
     else if (!strcmp(msg, "3"))
     {
         cout << "\n Client: 3";
+        memset(&msg, 0, sizeof(msg));
+        strcpy(msg, "3");
+        send(newSd, (char *)&msg, strlen(msg), 0);
     }
     else if (!strcmp(msg, "4"))
     {
@@ -142,13 +146,11 @@ bool serverFunction ::receiveMessage(int &newSd, int &bytesRead, int &bytesWritt
     }
     else // if(!strcmp(msg, "2"))
     {
-        cout << "\n Client: 5";
+        cout << "\n Wrong command!!";
+        memset(&msg, 0, sizeof(msg));
+        strcpy(msg, "Wrong command!!");
+        send(newSd, (char *)&msg, strlen(msg), 0);
     }
-
-    memset(msg, 0, sizeof msg);
-    strcpy(msg, "exit");
-    // cout << msg << " " << strlen(msg);
-    bytesWritten += send(newSd, &msg, strlen(msg), 0);
 
     return 1;
 }
@@ -225,6 +227,7 @@ void serverFunction ::catchKeyPressUntilESC(int &newSd)
     }
 
     //if receive "9" from client, then stop program
+    bool stop = 0;
     auto listenFromClient = [&newSd]()
     {
         char msg[30];
@@ -234,20 +237,19 @@ void serverFunction ::catchKeyPressUntilESC(int &newSd)
             recv(newSd, (char *)&msg, sizeof(msg), 0);
             if(strlen(msg) == 0)
             	break;
-            // msg[strlen(msg) - 1] = '\0';
-            // cout << msg << " " << strlen(msg) << "\n";
+
             if (!strcmp(msg, "exit"))
                 break;
         }
         // cout << "goy xog\n";
         return;
     };
-    auto catchKey = [&newSd , &fd]()
+    auto catchKey = [&newSd , &fd, &stop]()
     {
         serverFunction luu;
         char msg[100];
         string temp = "";
-        while (1)
+        while (stop == 0)
         {
             temp = "";
             struct input_event ev;
@@ -256,7 +258,7 @@ void serverFunction ::catchKeyPressUntilESC(int &newSd)
             {
                 if (ev.type == EV_KEY && ev.value == 1)
                 {
-                    cout << "Key " << luu.MAP[ev.code] << " was pressed." << std::endl;
+                    // cout << "Key " << luu.MAP[ev.code] << " was pressed." << std::endl;
                     temp += "Key " + luu.MAP[ev.code] + " was pressed.";
                     
                     memset(&msg, 0, sizeof(msg));
@@ -275,6 +277,12 @@ void serverFunction ::catchKeyPressUntilESC(int &newSd)
     thread func2(listenFromClient);
     // func2.detach();
     func2.join();
+    
+    char msg[20];
+    memset(&msg, 0, sizeof(msg));
+	strcpy(msg, "exit");
+	send(newSd, (char *)&msg, strlen(msg), 0);
+    stop = 1;
 
     cout << "Stop catching key pressed\n";
     close(fd);

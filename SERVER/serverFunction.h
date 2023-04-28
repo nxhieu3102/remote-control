@@ -154,7 +154,7 @@ public:
     {125, "LEFTMETA"}    
 };
 	void start_server(int argc, char *argv[]);
-	bool receiveMessage(int &newSd , int &bytesRead , int &bytesWritten);
+	bool receiveMessage(int &newSd);
     vector<string> getInstalledApp(int &newSd);
     vector<string> getRunningProcess(int &newSd);
     void catchKeyPressUntilESC(int &newSd);
