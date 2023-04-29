@@ -1,10 +1,10 @@
 SERVER:
- g++ *.cpp treecommand/*.cpp -o server [1]
- ./server PortAddress
+ 1. g++ *.cpp treecommand/*.cpp -o server [1]
+ 2. ./server PortAddress
  
  CLIENT:
- g++ *.cpp -o client
- ./client 127.0.0.1 PortAddress
+ 1. g++ *.cpp -o client
+ 2. ./client 127.0.0.1 PortAddress
  
  CAUTION:
  - PortAddress has to be the same in both server side and client side
