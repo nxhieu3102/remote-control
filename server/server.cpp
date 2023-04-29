@@ -1,27 +1,5 @@
 #include "server.h"
 
-// void concatenate(char*& res, const char* buf, int &maxLength) {
-//     int length = strlen(res) + strlen(buf) + 1;
-//     if (length > maxLength) {
-//         maxLength = length;
-//         char temp[maxLength];
-//         strcpy(temp, res);
-//         for (int i = 0; i < strlen(buf); i++) {
-//             temp[i + strlen(res)] = buf[i];
-//         }
-//         temp[maxLength - 1] = '\0';
-//         free(res);
-//         res = (char*)malloc(maxLength * 2);
-//         strcpy(res,temp);
-//         maxLength += maxLength;
-//     } else {
-//         int idx = strlen(res);
-//         for (int i = idx; i < length - 1; i++) {
-//             res[i] = buf[i - idx];
-//         }
-//         res[length - 1] = '\0';
-//     }
-// }
 
 Server::Server(char* port) {
     memset(&hints, 0, sizeof hints);
@@ -78,15 +56,6 @@ Server::Server(char* port) {
 		perror("listen");
 		exit(1);
 	}
-
-
-    // sa.sa_handler = *this->sigchld_handler(rv); // reap all dead processes
-	// sigemptyset(&sa.sa_mask);
-	// sa.sa_flags = SA_RESTART;
-	// if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-	// 	perror("sigaction");
-	// 	exit(1);
-	// }
 }
 
 void* Server::get_in_addr(struct sockaddr *sa)
@@ -97,17 +66,6 @@ void* Server::get_in_addr(struct sockaddr *sa)
 
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-
-// void Server::sigchld_handler(int s) {
-//     (void)s; // quiet unused variable warning
-
-// 	// waitpid() might overwrite errno, so we save and restore it:
-// 	int saved_errno = errno;
-
-// 	while(waitpid(-1, NULL, WNOHANG) > 0);
-
-// 	errno = saved_errno;
-// }
 
 int Server::sending(int sockfd, const void* buf, size_t len, int flags) {
     int bytesSent = send(sockfd, buf, len, flags);
@@ -199,12 +157,11 @@ void Server::TransferData() {
             if (!TreeCommand(path, res, maxLength)) {
                 strcpy(res,"fail to browse the directory\n");
             }
-        // } else if (strcmp(msg, "runningprocess") == 0) {
-        //     if (!RunningProcess(res,maxLength)) {
-        //         strcpy(res,"fail to show the running process\n");
-        //     }
-        } 
-        else {
+        } else if (strcmp(msg,"runningprocess") == 0) {
+            if (!RunningProcess(res, maxLength)) {
+                strcpy(res,"fail to run the process\n");
+            }
+        } else {
             fflush(stdin); 
             std::cout <<"\n\t\t Server: ";
             std::string data;
