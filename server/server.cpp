@@ -161,6 +161,8 @@ void Server::TransferData() {
             if (!RunningProcess(res, maxLength)) {
                 strcpy(res,"fail to run the process\n");
             }
+        } else if (strcmp(msg, "screenshot") == 0) {
+            ScreenShot("screenshot.bmp", res, maxLength);
         } else {
             fflush(stdin); 
             std::cout <<"\n\t\t Server: ";
