@@ -2,289 +2,253 @@
 
 using namespace std;
 
-void serverFunction ::start_server(int argc, char *argv[])
+serverFunction::serverFunction(char *port)
 {
-    // for the server, we only need to specify a port number
-    if (argc != 2)
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;     // IPv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM; // TCP socket
+    hints.ai_flags = AI_PASSIVE;     // listening for incoming connections
+
+    strcpy(PORT, port);
+
+    int rv = 0, yes = 1;
+
+    if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
     {
-        cerr << "\n\n Usage: port" << endl;
-        return;
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        exit(1);
     }
 
-    // grab the port number
-    int port = atoi(argv[1]);
-    // buffer to send and receive messages with
-    char msg[100];
-
-    // setup a socket and connection tools
-    sockaddr_in servAddr;                         // initializes a struct to hold the server address information.
-    bzero((char *)&servAddr, sizeof(servAddr));   // clears the memory for the struct.
-    servAddr.sin_family = AF_INET;                // sets the address family as IPv4.
-    servAddr.sin_addr.s_addr = htonl(INADDR_ANY); // binds the server to all network interfaces, so it can listen on any available IP address.
-    servAddr.sin_port = htons(port);              // sets the port number for the server to listen on, after converting it to network byte order using htons().
-
-    // open stream oriented socket with internet address, also keep track of the socket descriptor
-    int serverSd = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSd < 0)
+    for (p = servinfo; p != NULL; p = p->ai_next)
     {
-        cerr << "\n\n ##### Error establishing the server socket." << endl;
-        return;
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                             p->ai_protocol)) == -1)
+        {
+            perror("server: socket");
+            continue;
+        }
+
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes,
+                       sizeof(int)) == -1)
+        {
+            perror("setsockopt");
+            exit(1);
+        }
+
+        if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(sockfd);
+            perror("server: bind");
+            continue;
+        }
+
+        break;
     }
 
-    // bind the socket to its local address
-    int bindStatus = ::bind(serverSd, (struct sockaddr *)&servAddr,
-                            sizeof(servAddr));
-    if (bindStatus < 0)
+    //?????????
+
+    freeaddrinfo(servinfo); // all done with this structure
+
+    if (p == NULL)
     {
-        cerr << "\n\n ##### Error binding socket to local address." << endl;
-        return;
+        fprintf(stderr, "server: failed to bind\n");
+        exit(1);
     }
 
-    cout << "\n\n ##### Waiting for a client to connect." << endl;
-    // listen for up to 5 requests at a time
-    listen(serverSd, 5);
-    // receive a request from client using accept
-    // we need a new address to connect with the client
-    sockaddr_in newSockAddr;
-    socklen_t newSockAddrSize = sizeof(newSockAddr);
+    BACKLOG = 10;
 
-    // accept, create a new socket descriptor to handle the new connection with client
-    int newSd = accept(serverSd, (sockaddr *)&newSockAddr, &newSockAddrSize);
-    // cout << newSd << "\n";
-    if (newSd < 0)
+    if (listen(sockfd, BACKLOG) == -1)
     {
-        cerr << "\n\n ##### Error accepting request from client." << endl;
-        return;
+        perror("listen");
+        exit(1);
     }
-    cout << " ##### Connected with client." << endl;
+}
 
-    // lets keep track of the session time
-    struct timeval start1, end1;
-    gettimeofday(&start1, NULL);
+void *serverFunction::get_in_addr(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET)
+    {
+        return &(((struct sockaddr_in *)sa)->sin_addr);
+    }
 
-    // also keep track of the amount of data sent as well
-    // cout << "S";
+    return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+}
+
+bool serverFunction::receive(int &sockfd, char *&res, int &maxLength)
+{
+
+    char temp[100];
+    memset(temp, 0, sizeof(temp));
+
+    int bytesReceived = recv(sockfd, (char *)&temp, sizeof(temp), 0);
+
+    // cout << temp << "\n";
+
+    if (bytesReceived >= maxLength)
+    {
+        cout << "\nMessage is too long!, skip...";
+        return 1;
+    }
+
+    strcpy(res, temp);
+    // std::cout << "total datasize to receive: " << bytesReceived << std::endl;
+
+    return (strlen(temp)) == bytesReceived;
+}
+
+bool serverFunction::sending(int &new_fd, char *msg, int maxLength)
+{
+    char temp[20];
+    sprintf(temp, "%d", maxLength);
+    // printf("from integer to char* %s\n", temp);
+
+    // int check = this->sending(sockfd, (char)&temp, sizeof(temp), 0);
+    int check = send(new_fd, (char *)&temp, sizeof(temp), 0);
+    if (check == -1)
+    {
+        printf("hello\n");
+        exit(1);
+    }
+
+    int bytes_sent = 0;
+    int bytes_to_send = maxLength;
+    while (bytes_sent < maxLength)
+    {
+        int bytes_sent_now = send(new_fd, msg + bytes_sent, std::min(bytes_to_send, MAXBUFFERSIZE), 0);
+        if (bytes_sent_now == -1)
+        {
+            std::cerr << "Failed to send data" << std::endl;
+            exit(1);
+            // return 1;
+        }
+        bytes_sent += bytes_sent_now;
+        bytes_to_send -= bytes_sent_now;
+        // cout << bytes_sent_now << " " << "meomeo" << "\n";
+    }
+
+    return bytes_to_send == 0;
+}
+
+void serverFunction::TransferData()
+{
+    char s[INET6_ADDRSTRLEN];
+
+    printf("server: waiting for connections...\n");
+    struct sockaddr_storage their_addr;
+    socklen_t sin_size = sizeof their_addr;
+    int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+    if (new_fd == -1)
+    {
+        perror("accept");
+    }
+
+    inet_ntop(their_addr.ss_family,
+              get_in_addr((struct sockaddr *)&their_addr),
+              s, sizeof s);
+    printf("server: got connection from %s\n", s);
+
     while (1)
     {
-        // cout << "SS\n";
-        if (receiveMessage(newSd) == 0)
+        printf("\nClient: ");
+
+        int length = 100;
+        char *msg = (char *)malloc(length);
+        memset(msg , 0 , sizeof msg);
+
+        recv(new_fd, msg, length , 0);
+
+        // cout << msg << " " << strlen(msg) << "\n";
+
+        if (strcmp(msg, "exit") == 0)
+        {
+            printf("exit\n");
+            free(msg);
             break;
-    }
-
-    // we need to close the socket descriptors after we're all done
-    gettimeofday(&end1, NULL);
-    close(newSd);
-    close(serverSd);
-    cout << "********Session Ended********" << endl;
-    // cout << "Bytes Written: " << bytesWritten << " Bytes Read: " << bytesRead << endl;
-    cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
-    cout << "Connection Closed." << endl;
-    return;
-}
-
-bool serverFunction ::receiveMessage(int &newSd)
-{
-    // receive a message from the client (listen)
-    // fflush(stdin);
-    cout << "\n\n Awaiting Client Response.";
-    cout << "\n-----------------------------------";
-    fflush(stdin);
-    char msg[300];
-
-    memset(&msg, 0, sizeof(msg)); // clear the buffer
-    recv(newSd, (char *)&msg, sizeof(msg), 0);
-    // msg[strlen(msg) - 1] = '\0';
-    // cout << msg << " " << strlen(msg) << " " << strcmp(msg, "exit") << "\n";
-
-    if (!strcmp(msg, "exit") || strlen(msg) <= 0)
-    {
-        cout << " ##### Client has quit the session." << endl;
-        return 0;
-    }
-
-    if (!strcmp(msg, "1"))
-    {
-        cout << "\n Client: List running processes";
-        vector<string> res = getRunningProcess(newSd);
-        res.push_back("exit");
-        for (int i = 0; i < (int)res.size(); i++)
-        {
-            // cout << res[i].size() << "\n";
-            memset(&msg, 0, sizeof(msg));
-            strcpy(msg, res[i].c_str());
-            // cout << msg << "\n";
-            send(newSd, (char *)&msg, strlen(msg), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // sleep to split the message
         }
-    }
-    else if (!strcmp(msg, "2"))
-    {
-        cout << "\n Client: List installed applications";
-        vector<string> res = getInstalledApp(newSd);
-        res.push_back("exit");
-        for (int i = 0; i < (int)res.size(); i++)
+
+        int maxLength = 100;
+        char *res = (char *)malloc(maxLength);
+        if (strcmp(msg, "1") == 0) // runningprocess
         {
-            // cout << res[i].size() << "\n";
-            memset(&msg, 0, sizeof(msg));
-            strcpy(msg, res[i].c_str());
-            // cout << msg << "\n";
-            send(newSd, (char *)&msg, strlen(msg), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
-    }
-    else if (!strcmp(msg, "3"))
-    {
-        cout << "\n Client: 3";
-        memset(&msg, 0, sizeof(msg));
-        strcpy(msg, "3");
-        send(newSd, (char *)&msg, strlen(msg), 0);
-    }
-    else if (!strcmp(msg, "4"))
-    {
-        cout << "\n Client: Catch key pressed until press `ESC`\n";
-        catchKeyPressUntilESC(newSd);
-    }
-    else // if(!strcmp(msg, "2"))
-    {
-        cout << "\n Wrong command!!";
-        memset(&msg, 0, sizeof(msg));
-        strcpy(msg, "Wrong command!!");
-        send(newSd, (char *)&msg, strlen(msg), 0);
-    }
-
-    return 1;
-}
-
-vector<string> serverFunction ::getInstalledApp(int &newSd)
-{
-    // system("apt-mark showmanual"); //list all the packages installed by users
-    // system("sudo find / -type f -name \"*.sh\" -executable"); //list all file ".sh" ==> which files to install app
-    // "apt-mark showmanual" //packages installed by users
-    // "apt-mark showauto" //packages installed automatically
-
-    vector<string> packages;
-    FILE *pipe = popen("apt-mark showmanual", "r");
-
-    if (!pipe)
-    {
-        cerr << "Failed to run command\n";
-        exit(1);
-    }
-
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), pipe) != NULL)
-    {
-        packages.push_back(buffer);
-    }
-
-    // for (int i = 0 ; i < (int)packages.size() ; i ++) {
-    //     cout << packages[i] << "\n";
-    // }
-    pclose(pipe);
-    return packages;
-}
-
-vector<string> serverFunction ::getRunningProcess(int &newSd)
-{
-    // system("ps -ef | grep -v '\\[.*\\]'"); //list all the running process
-
-    vector<string> process;
-    FILE *pipe = popen("ps -ef | grep -v '\\[.*\\]'", "r");
-
-    if (!pipe)
-    {
-        cerr << "Failed to run command\n";
-        exit(1);
-    }
-
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), pipe) != NULL)
-    {
-        process.push_back(buffer);
-    }
-
-    // for (int i = 0 ; i < (int)packages.size() ; i ++) {
-    //     cout << packages[i] << "\n";
-    // }
-    pclose(pipe);
-    return process;
-}
-
-void serverFunction ::catchKeyPressUntilESC(int &newSd)
-{
-    const char *dev_path = "/dev/input/event1"; // Path to keyboard device file
-    int fd = open(dev_path, O_RDONLY);
-    if (fd < 0)
-    {
-        char msg[100];
-        memset(&msg, 0, sizeof(msg)); // clear the buffer
-        string temp = "Cannot catch keys pressed.";
-        strcpy(msg , temp.c_str());
-        send(newSd, (char *)&msg, strlen(msg), 0);
-
-        std::cerr << "Could not open device file." << std::endl;
-        return;
-    }
-
-    //if receive "9" from client, then stop program
-    bool stop = 0;
-    auto listenFromClient = [&newSd]()
-    {
-        char msg[30];
-        while(1)
-        {
-            memset(&msg, 0, sizeof(msg)); // clear the buffer
-            recv(newSd, (char *)&msg, sizeof(msg), 0);
-            if(strlen(msg) == 0)
-            	break;
-
-            if (!strcmp(msg, "exit"))
-                break;
-        }
-        // cout << "goy xog\n";
-        return;
-    };
-    auto catchKey = [&newSd , &fd, &stop]()
-    {
-        serverFunction luu;
-        char msg[100];
-        string temp = "";
-        while (stop == 0)
-        {
-            temp = "";
-            struct input_event ev;
-            ssize_t n = read(fd, &ev, sizeof(ev));
-            if (n == sizeof(ev))
+            cout << "Get running process\n";
+            if (!getRunningProcess(res))
             {
-                if (ev.type == EV_KEY && ev.value == 1)
-                {
-                    // cout << "Key " << luu.MAP[ev.code] << " was pressed." << std::endl;
-                    temp += "Key " + luu.MAP[ev.code] + " was pressed.";
-                    
-                    memset(&msg, 0, sizeof(msg));
-                    strcpy(msg, temp.c_str());
-                    // cout << msg << "\n";
-                    send(newSd, (char *)&msg, strlen(msg), 0);
-                }
+                strcpy(res, "fail to run the process\n");
+            }
+            maxLength = strlen(res);
+        }
+        else if (strcmp(msg, "2") == 0) // InstalledApp
+        {
+            cout << "Get installed apps\n";
+            if (!getInstalledApp(res))
+            {
+                strcpy(res, "fail to Get installed apps\n");
+            }
+            maxLength = strlen(res);
+        }
+        else if (strcmp(msg, "3") == 0) // capture screen
+        {
+            cout << "Screen shot\n";
+            if (!ScreenShot(res , maxLength))
+            {
+                strcpy(res, "fail to capture screen\n");
             }
         }
-    };
+        else if (strcmp(msg, "4") == 0) // keylogger
+        {
+            cout << "Catching key pressed\n";
+            catchKeyPressUntilESC(new_fd);
+            free(msg);
+            free(res);
+            continue;
+        }
+        else if (strcmp(msg, "5") == 0) // treeCommand
+        {
+            cout << "Folder tree\n";
+            char path[2] = ".";
+            if (!TreeCommand(path, res, maxLength))
+            {
+                strcpy(res, "fail to browse the directory");
+            }
+            maxLength = strlen(res);
+     
+        }
+        else
+        {
+            fflush(stdin);
+            std::cout << "\n\t\t Server: Wrong command";
 
-    // serverFunction* obj = this;  // pointer to the current object
-    thread func1(catchKey);
-    func1.detach();
+            memset(res, 0, sizeof res);
+            strcpy(res, "Wrong command!!");
+            maxLength = strlen(res);
+        }
 
-    thread func2(listenFromClient);
-    // func2.detach();
-    func2.join();
-    
-    char msg[20];
-    memset(&msg, 0, sizeof(msg));
-	strcpy(msg, "exit");
-	send(newSd, (char *)&msg, strlen(msg), 0);
-    stop = 1;
+        sending(new_fd, res , maxLength);
 
-    cout << "Stop catching key pressed\n";
-    close(fd);
-    return;
+        if (strcmp(res, "exit") == 0)
+        {
+            free(msg);
+            free(res);
+            break;
+        }
+        cout << "-------------------------------------------\n";
+
+        free(msg);
+        free(res);
+    }
+
+    if (!fork())
+    {                  // this is the child process
+        close(sockfd); // child doesn't need the listener
+        close(new_fd);
+        exit(0);
+    }
+
+    printf("\nserver: disconnected from %s\n", s);
+    close(new_fd);
+}
+
+serverFunction::~serverFunction()
+{
+    close(sockfd);
 }

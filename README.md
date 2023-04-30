@@ -1,10 +1,12 @@
 How to run project:
 
 --> Run server first
->> g++ -pthread SERVER/*.cpp -o server; ./server 8080
+>> g++ -pthread SERVER/*.cpp SERVER/*/*.cpp -o server; 
+>> ./server 8080
 
 --> Next, run client
->> g++ -pthread CLIENT/*.cpp -o client -lncurses; ./client <"your local ip"> 8080
+>> g++ -pthread CLIENT/*.cpp -o client -lncurses 
+>> ./client <"your local ip"> 8080
 
 1. client sends request to server
 2. server does the request and gets data 

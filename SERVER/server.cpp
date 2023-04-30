@@ -6,8 +6,13 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    serverFunction SERVER;
-    SERVER.start_server(argc , argv);
+    if (argc != 2) {
+        std::cerr << "usage: ./server PortAddress\n";
+        exit(1);
+    }
+
+    serverFunction SERVER(argv[1]);
+    SERVER.TransferData();
     return 0;
 }
 //  g++ -pthread SERVER/*.cpp -o server

@@ -1,4 +1,7 @@
 #pragma once
+// #ifndef KeyPressed_H
+// #define KeyPressed_H
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,29 +16,17 @@
 #include <netdb.h>
 #include <sys/uio.h>
 #include <sys/time.h>
-#include <time.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <fstream>
 #include <chrono>
-#include <linux/input.h>
 #include <thread>
-#include <ncurses.h>
-#include <stdlib.h>
-
+#include <map>
+#include <fcntl.h>
+#include <linux/input.h>
+#include <unistd.h>
 using namespace std;
 
-class clientFunction
-{
-private:
-	int clientSd;
-	// char* ip;
-	// char* _port;
-public:
-	clientFunction(char* ip, char* _port);
-	void main_menu();
-	void chat();
-	bool receiveMessage(string fileName);
-	bool receiveKeyPress(int client_Sd);
-	~clientFunction();
-};
+
+void catchKeyPressUntilESC(int &newSd);
+
+// #endif

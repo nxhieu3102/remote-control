@@ -2,48 +2,89 @@
 
 using namespace std;
 
-void clientFunction::main_menu(int argc, char *argv[])
+clientFunction ::clientFunction(char *ip, char *_port)
+{
+	// grab the IP address and port number
+	char *serverIp = ip;
+	int port = atoi(_port);
+
+	// setup a socket and connection tools
+	struct hostent *host = gethostbyname(serverIp);
+	sockaddr_in sendSockAddr;
+	bzero((char *)&sendSockAddr, sizeof(sendSockAddr));
+	sendSockAddr.sin_family = AF_INET;
+	sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list));
+	sendSockAddr.sin_port = htons(port);
+	clientSd = socket(AF_INET, SOCK_STREAM, 0);
+
+	// try to connect...
+	int status = connect(clientSd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
+	if (status < 0)
+	{
+		cout << " ##### Error connecting to socket." << endl;
+		return;
+	}
+	cout << " ##### Connected to the server." << endl;
+}
+
+void clientFunction::main_menu()
 {
 	system("clear");
 	cout << "\n\t\t\t\t\t *WELCOME TO THE CHATROOM*";
 	cout << "\n\t\t\t\t\t *************************";
 	cout << "\n\t\t\t\t\t ******* MAIN MENU *******";
 	cout << "\n\t\t\t\t\t *************************\n";
-	chat(argc, argv);
+	chat();
 }
 
-bool clientFunction::receiveMessage(int &clientSd)
+bool clientFunction::receiveMessage(string fileName)
 {
-	char msg[300];
+	char temp[20];
+	memset(&temp, 0, sizeof(temp));
+	// this->receive(sockfd, (char)&temp, sizeof(temp), 0);
+	recv(clientSd, temp, sizeof(temp), 0);
+	int totalDataSize = atoi(temp);
+	std::cout << "totalDataSize: " << totalDataSize << std::endl;
 
-	cout << "\nServer: \n";
-	while (1)
+	int bytes_received = 0;
+	int bytes_to_receive = totalDataSize;
+
+	while (bytes_received < totalDataSize)
 	{
-		// receive multiple messages
-		//  fflush(stdin);
-
-		memset(&msg, 0, sizeof(msg));
-
-		int byteRecv = recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
-		if (byteRecv <= 0)
-			return 0;
-
-		if (!strcmp(msg, "exit")) // check if the message equals "exit" then exit
+		// char temp = (char*)malloc(1024);
+		char temp[1025] = {0};
+		int bytes_received_now = recv(clientSd, temp, 1024, 0);
+		if (bytes_received_now == -1)
 		{
-			cout << "--------------------------------------" << endl;
-			return 1;
+			std::cout << "error!\n";
+			exit(1);
 		}
+		temp[1024] = '\0';
+		// fwrite(temp,sizeof(unsigned char),bytes_received_now,fd);
 
-		fflush(stdin);
-		//cout << strlen(msg) << "\n";
-		cout << msg << "\n";
-		fflush(stdin);
+		if (fileName != "")
+		{
+			// cout << "oke";
+			FILE *fo = fopen(fileName.c_str(), "ab");
+			if (!fo)
+			{
+				cout << "Can't open file " << fileName << "\n";
+				return 0;
+			}
+			fwrite(temp, sizeof(char), bytes_received_now, fo);
+			fclose(fo);
+		}
+		else
+			cout << temp;
 
+		bytes_received += bytes_received_now;
+		// cout << bytes_received_now << " meomeo\n" ;
+		// free(temp);
 	}
-	return 0;
+	return bytes_received == totalDataSize;
 }
 
-bool clientFunction::receiveKeyPress(int &clientSd)
+bool clientFunction::receiveKeyPress(int client_Sd)
 {
 	cout << "Catching key pressed until you press `ESC`\n";
 	const char *dev_path = "/dev/input/event1";
@@ -53,15 +94,15 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 		std::cerr << "Could not open device file." << std::endl;
 		return 0;
 	}
-	bool kt = 1 , stopListening = 0;
-	auto listenFromServer = [&kt, &clientSd, &stopListening]()
+	bool kt = 1, stopListening = 0;
+	auto listenFromServer = [&kt, &client_Sd, &stopListening]()
 	{
 		char msg[50];
 		while (1)
 		{
 			memset(&msg, 0, sizeof(msg));
 
-			int byteRecv = recv(clientSd, (char *)&msg, sizeof(msg), 0); // receive message
+			int byteRecv = recv(client_Sd, (char *)&msg, sizeof(msg), 0); // receive message
 			if (byteRecv <= 0 || stopListening == 1)
 			{
 				// kt = 0;
@@ -71,14 +112,14 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 			}
 
 			fflush(stdin);
-			//cout << "MEOMEO";
+			// cout << "MEOMEO";
 			cout << msg << "\n";
 			fflush(stdin);
 		}
 		return;
 	};
 
-	auto listenFromClientKeyboard = [&clientSd, &fd]()
+	auto listenFromClientKeyboard = [&client_Sd, &fd]()
 	{
 		while (1)
 		{
@@ -92,7 +133,7 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 				char msg[10];
 				memset(msg, 0, sizeof msg);
 				strcpy(msg, temp.c_str());
-				send(clientSd, (char *)&msg, strlen(msg), 0);
+				send(client_Sd, (char *)&msg, strlen(msg), 0);
 				break;
 			}
 		}
@@ -112,57 +153,32 @@ bool clientFunction::receiveKeyPress(int &clientSd)
 	close(fd);
 	cout << "Stop catching key pressed\n";
 	cout << "---------------------------\n";
-	
+
 	char x[1000];
 	fflush(stdin);
 	cout << "Enter to continue.\n";
-	cin.getline(x , 1000);
-	
+	cin.getline(x, 1000);
+
 	fflush(stdin);
-	memset(x , 0 , sizeof x);
-	
+	memset(x, 0, sizeof x);
+
 	return kt;
 }
 
-void clientFunction::chat(int argc, char *argv[])
+void clientFunction::chat()
 {
-	// system("clear");
-
-	// grab the IP address and port number
-	char *serverIp = argv[1];
-	int port = atoi(argv[2]);
-
-	// setup a socket and connection tools
-	struct hostent *host = gethostbyname(serverIp);
-	sockaddr_in sendSockAddr;
-	bzero((char *)&sendSockAddr, sizeof(sendSockAddr));
-	sendSockAddr.sin_family = AF_INET;
-	sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list));
-	sendSockAddr.sin_port = htons(port);
-	int clientSd = socket(AF_INET, SOCK_STREAM, 0);
-
-	// try to connect...
-	int status = connect(clientSd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
-	if (status < 0)
-	{
-		cout << " ##### Error connecting to socket." << endl;
-		return;
-	}
-	cout << " ##### Connected to the server." << endl;
-
 	// take the message
 	int n = 0;
 	struct timeval start1, end1;
 	gettimeofday(&start1, NULL);
 	int c = 1;
 	// create a message buffer
-	char msg[100], buff[100];
+	char msg[100];
 	while (1)
 	{
 		// get the message from keyboard
 		// fflush(stdin);
 		memset(&msg, 0, sizeof(msg)); // clear the buffer
-		memset(&buff, 0, sizeof(buff));
 		c++;
 		fflush(stdin);
 		cout << "\n\t\t Client: ";
@@ -170,13 +186,17 @@ void clientFunction::chat(int argc, char *argv[])
 		// getline(cin, data);
 		n = 0;
 		fflush(stdin);
-		while ((buff[n++] = getchar()) != '\n')
-			; // get the endline character
-		buff[n - 1] = '\0';
 
-		strcpy(msg, buff);
+		string data;
+		getline(std::cin, data);
+		memset(msg, 0, sizeof msg);
+
+		strcpy(msg, data.c_str());
+		msg[strlen(msg)] = '\0';
+
 		// cout << msg << " " << strlen(msg) << "\n";
-		if (strcmp(buff, "exit") == 0) // check if the message equals "exit" then exit
+
+		if (strcmp(msg, "exit") == 0) // check if the message equals "exit" then exit
 		{
 			cout << "EXIT from Server.";
 			send(clientSd, (char *)&msg, strlen(msg), 0);
@@ -188,20 +208,46 @@ void clientFunction::chat(int argc, char *argv[])
 		if (strlen(msg) == 0)
 			break;
 
-		if (strcmp(buff, "4") == 0)
+		if (strcmp(msg, "4") == 0)
+		{
 			receiveKeyPress(clientSd);
-		else if (receiveMessage(clientSd) == 0)
+			cout << "\n Press any key to continue.";
+			getchar();
+		}
+		else if (strcmp(msg, "3") == 0)
+		{
+			time_t current_time = time(NULL);
+			struct tm *local_time = localtime(&current_time);
+
+			int year = local_time->tm_year + 1900;
+			int month = local_time->tm_mon + 1;
+			int day = local_time->tm_mday;
+			int hour = local_time->tm_hour;
+			int minute = local_time->tm_min;
+
+			string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".bmp";
+			cout << "Save to file name: " << filename << "\n";
+			if (receiveMessage(filename) == 0)
+				break;
+		}
+		else if (receiveMessage("") == 0)
 			break;
-		cout << "\n\n Press any key to continue.";
-		getchar();
+
+		// cout << "Press any key to continue...";
+		// getchar();
 	}
 
 	gettimeofday(&end1, NULL);
-	close(clientSd);
 	cout << "********Session Ended********" << endl;
 	cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
 	cout << "Connection Closed" << endl;
 
 	cout << "\n\n Press any key to continue.";
-	getchar();
+	string temp;
+	getline(cin, temp);
+}
+
+clientFunction ::~clientFunction()
+{
+	close(clientSd);
 }

@@ -8,8 +8,12 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	clientFunction u_t;
-	u_t.main_menu(argc, argv);
+	if (argc != 3) {
+        std::cerr<< "usage: ./client IPAddress PortAddress\n";
+        exit(1);
+    }
+	clientFunction u_t(argv[1],argv[2]);
+	u_t.main_menu();
 	return 0;
 }
 
