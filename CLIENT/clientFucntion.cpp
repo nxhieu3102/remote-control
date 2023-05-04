@@ -44,7 +44,9 @@ bool clientFunction::receiveMessage(string fileName)
 	// this->receive(sockfd, (char)&temp, sizeof(temp), 0);
 	recv(clientSd, temp, sizeof(temp), 0);
 	int totalDataSize = atoi(temp);
+	fflush(stdin);
 	std::cout << "totalDataSize: " << totalDataSize << std::endl;
+	fflush(stdin);
 
 	int bytes_received = 0;
 	int bytes_to_receive = totalDataSize;
@@ -78,6 +80,7 @@ bool clientFunction::receiveMessage(string fileName)
 			cout << temp;
 
 		bytes_received += bytes_received_now;
+		// cout << "\n";
 		// cout << bytes_received_now << " meomeo\n" ;
 		// free(temp);
 	}
@@ -176,14 +179,12 @@ void clientFunction::chat()
 	char msg[100];
 	while (1)
 	{
-		// get the message from keyboard
-		// fflush(stdin);
+
 		memset(&msg, 0, sizeof(msg)); // clear the buffer
 		c++;
 		fflush(stdin);
 		cout << "\n\t\t Client: ";
-		// string data;
-		// getline(cin, data);
+
 		n = 0;
 		fflush(stdin);
 
@@ -208,7 +209,26 @@ void clientFunction::chat()
 		if (strlen(msg) == 0)
 			break;
 
-		if (strcmp(msg, "4") == 0)
+		if(!strcmp(msg, "1") || !strcmp(msg, "6"))
+		{
+			fflush(stdin);
+			if(!strcmp(msg, "1"))
+				cout << "Type the name of app that you want to start: ";
+			else
+				cout << "Type the name of app that you want to stop: ";
+			fflush(stdin);
+				
+			getline(std::cin, data);
+			memset(msg, 0, sizeof msg);
+
+			strcpy(msg, data.c_str());
+			msg[strlen(msg)] = '\0';
+
+			send(clientSd, (char *)&msg, strlen(msg), 0);
+			if (receiveMessage("") == 0)
+				break;
+		}
+		else if (strcmp(msg, "4") == 0)
 		{
 			receiveKeyPress(clientSd);
 			cout << "\n Press any key to continue.";

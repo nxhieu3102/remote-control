@@ -2,10 +2,12 @@ How to run project:
 
 --> Run server first
 >> g++ -pthread SERVER/*.cpp SERVER/*/*.cpp -o server; 
+
 >> ./server 8080
 
 --> Next, run client
 >> g++ -pthread CLIENT/*.cpp -o client -lncurses 
+
 >> ./client <"your local ip"> 8080
 
 1. client sends request to server
@@ -16,7 +18,8 @@ How to run project:
 Client will ask to process in server's system:
 -Client send the message in type:
 
-    + 1 : List running processes
+    + 1 : start app
+    + 6 : stop app
     + 2 : List installed programs
     + 3 : Capture the screen
     + 4 : Keylog
@@ -24,7 +27,8 @@ Client will ask to process in server's system:
 
 -Server returns the message:
 
-    + 1 : Vector of string that saves the information of running processes
+    + 1 : success or not
+    + 6 : success or not
     + 2 : Vector of string that saves the information of installed programs
     + 3 : Image (file .png, .JPEG, ...)
     + 4 : Every characters on the keyboard from 'start command' to 'end command'

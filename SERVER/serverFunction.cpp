@@ -168,10 +168,29 @@ void serverFunction::TransferData()
 
         int maxLength = 100;
         char *res = (char *)malloc(maxLength);
-        if (strcmp(msg, "1") == 0) // runningprocess
+        if (strcmp(msg, "1") == 0) // Start app
         {
-            cout << "Get running process\n";
-            if (!getRunningProcess(res))
+            memset(msg , 0 , sizeof msg);
+            recv(new_fd, msg, length , 0);
+
+            string temp(msg);
+
+            cout << "Start app " << msg << "\n";
+            if (!startApp(res , temp))
+            {
+                strcpy(res, "fail to run the process\n");
+            }
+            maxLength = strlen(res);
+        }
+        else if (strcmp(msg, "6") == 0) // Stop app
+        {
+            memset(msg , 0 , sizeof msg);
+            recv(new_fd, msg, length , 0);
+
+            string temp(msg);
+
+            cout << "Stop app " << msg << "\n";
+            if (!stopApp(res , temp))
             {
                 strcpy(res, "fail to run the process\n");
             }

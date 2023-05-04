@@ -28,4 +28,8 @@ using namespace std;
 
 bool getRunningProcess(char *&buffer);
 
+bool startApp(char *&buffer , string appName);
+
+bool stopApp(char *&buffer , string appName);
+
 // #endif

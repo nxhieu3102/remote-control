@@ -1,8 +1,11 @@
 *.vscode
+*.bmp
 
 test.cpp
 client
 server
 test
 
-*.bmp
+UI
+
+*.dll
