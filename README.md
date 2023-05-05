@@ -20,6 +20,7 @@ Client will ask to process in server's system:
 
     + 1 : start app
     + 6 : stop app
+    
     + 2 : List installed programs
     + 3 : Capture the screen
     + 4 : Keylog
