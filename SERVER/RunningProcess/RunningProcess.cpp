@@ -77,7 +77,7 @@ bool stopApp(char *&buffer , string appName)
     memset(buffer , 0 , sizeof buffer);
 
     string res = "";
-    if(system(("killall " + appName).c_str()) == 0)
+    if(system(("killall " + appName + " >/dev/null 2>&1").c_str()) == 0 || system(("killall gnome-" + appName + " >/dev/null 2>&1").c_str()) == 0)
         res = "Stop " + appName + " sucessfully";
     else
         res = "Can't find " + appName;
