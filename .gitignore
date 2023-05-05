@@ -1,3 +1,11 @@
-# ignore ALL .log files
-*.exe 
-*.vscode  
+*.vscode
+*.bmp
+
+test.cpp
+client
+server
+test
+
+UI
+
+*.dll
