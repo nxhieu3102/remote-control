@@ -1,6 +1,6 @@
 *.vscode
 *.bmp
-
+*.out
 test.cpp
 client
 server
