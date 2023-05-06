@@ -35,3 +35,8 @@ Client will ask to process in server's system:
     + 4 : Every characters on the keyboard from 'start command' to 'end command'
     + 5 : Vector of string that saves the tree path
 
+Login -> menu:
+- List process, Tree,  : Show a list
+- Capture : (Open new windown and display image)
+- Keyboard : display real time
+- ListApp : 
