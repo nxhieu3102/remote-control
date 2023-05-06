@@ -32,7 +32,7 @@ private:
 	// char* ip;
 	// char* _port;
 public:
-	clientFunction(char* ip, char* _port);
+	clientFunction(char* ip, char* _port, bool &flag);
 	void main_menu();
 	void chat();
 	bool receiveMessage(string fileName);

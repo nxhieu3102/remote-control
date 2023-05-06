@@ -2,12 +2,14 @@
 
 using namespace std;
 
-clientFunction ::clientFunction(char *ip, char *_port)
-{
+clientFunction ::clientFunction(char *ip, char *_port, bool &flag)
+{	
+	cout << "ip: " << ip << endl;
+	cout << "port: " << _port << endl;
 	// grab the IP address and port number
 	char *serverIp = ip;
 	int port = atoi(_port);
-
+	flag = true;
 	// setup a socket and connection tools
 	struct hostent *host = gethostbyname(serverIp);
 	sockaddr_in sendSockAddr;
@@ -20,11 +22,11 @@ clientFunction ::clientFunction(char *ip, char *_port)
 	// try to connect...
 	int status = connect(clientSd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
 	if (status < 0)
-	{
+	{	
+		flag = false;
 		cout << " ##### Error connecting to socket." << endl;
-		return;
 	}
-	cout << " ##### Connected to the server." << endl;
+	else cout << " ##### Connected to the server." << endl;
 }
 
 void clientFunction::main_menu()
