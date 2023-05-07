@@ -4,8 +4,6 @@ using namespace std;
 
 clientFunction ::clientFunction(char *ip, char *_port, bool &flag)
 {	
-	cout << "ip: " << ip << endl;
-	cout << "port: " << _port << endl;
 	// grab the IP address and port number
 	char *serverIp = ip;
 	int port = atoi(_port);

@@ -3,5 +3,6 @@
 
 int main() {
     ClientGUI CG;
-    CG.drawLoginRoom();    
+    CG.start();
+    CG.stop();
 }

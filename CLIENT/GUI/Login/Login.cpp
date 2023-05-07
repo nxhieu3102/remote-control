@@ -14,12 +14,6 @@ bool IsAnyKeyPressed()
 
 void ClientGUI::drawLoginRoom(){
 
-    const int screenWidth = ClientGUI::WIDTH;
-    const int screenHeight = ClientGUI::HEIGHT;
-
-    InitWindow(screenWidth, screenHeight, "Login Room");
-    SetTargetFPS(60);               // Set our game to run at 10 frames-per-second
-
     char IP[MAX_INPUT_CHARS + 1] = "\0";      // NOTE: One extra space required for null terminator char '\0'
     char PORT[MAX_INPUT_CHARS + 1] = "\0";      // NOTE: One extra space required for null terminator char '\0'
     
@@ -38,12 +32,6 @@ void ClientGUI::drawLoginRoom(){
 
     Rectangle buttonLogin = { 300, 250, 200, 50 };
     const char* buttonLoginText = "LOGIN";
-
-
-    Image BACKGROUND = LoadImage("background.png");
-    ImageResize(&BACKGROUND, 800, 450);
-    Texture2D texture = LoadTextureFromImage(BACKGROUND);
-
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -68,7 +56,7 @@ void ClientGUI::drawLoginRoom(){
             // Check if more characters have been pressed on the same frame
             while (key > 0)
             {   
-                cout << key << endl;
+                
                 // NOTE: Only allow keys in range [32..125]
                 
                 if ((key >= 32) && (key <= 125) && (letterCountIP < MAX_INPUT_CHARS))
@@ -81,9 +69,8 @@ void ClientGUI::drawLoginRoom(){
                 key = GetCharPressed();  // Check next character in the queue
             }
 
-            if (IsKeyPressed(KEY_BACKSPACE))
+            if (IsKeyDown(KEY_BACKSPACE))
             {   
-                cout<<"-----------xoa'----------";
                 letterCountIP--;
                 if (letterCountIP < 0) letterCountIP = 0;
                 IP[letterCountIP] = '\0';
@@ -111,7 +98,7 @@ void ClientGUI::drawLoginRoom(){
                 key = GetCharPressed();  // Check next character in the queue
             }
 
-            if (IsKeyPressed(KEY_BACKSPACE))
+            if (IsKeyDown(KEY_BACKSPACE))
             {
                 letterCountPORT--;
                 if (letterCountPORT < 0) letterCountPORT = 0;
@@ -141,7 +128,7 @@ void ClientGUI::drawLoginRoom(){
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
-            DrawTexture(texture, 0, 0, WHITE);
+            DrawTexture(background, 0, 0, WHITE);
             DrawText("IP", 100, 110, 40, GRAY);
             DrawText("PORT", 475, 110, 40, GRAY);
             
@@ -161,11 +148,4 @@ void ClientGUI::drawLoginRoom(){
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
-
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow(); 
-    drawMenuRoom();
-           // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
 }
