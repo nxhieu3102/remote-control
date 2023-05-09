@@ -19,7 +19,16 @@ void ClientGUI::start(){
     background = LoadTextureFromImage(BACKGROUND);
 
     drawLoginRoom();
-    drawMenuRoom();
+
+    if(doesLoginSuccess){
+        drawMenuRoom();
+        while(true){
+            if(backToMenu)
+                drawMenuRoom();
+            if(exit)
+                break;
+        }
+    }
 }
 
 void ClientGUI::stop(){

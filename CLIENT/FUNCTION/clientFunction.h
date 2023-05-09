@@ -35,7 +35,7 @@ public:
 	clientFunction(char* ip, char* _port, bool &flag);
 	void main_menu();
 	void chat();
-	bool receiveMessage(string fileName);
+	bool receiveMessage(string fileName, string& res);
 	bool receiveKeyPress(int client_Sd);
 	~clientFunction();
 };

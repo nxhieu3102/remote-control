@@ -1,6 +1,5 @@
 #include "Login.h"
 
-#define MAX_INPUT_CHARS     50
 
 bool IsAnyKeyPressed()
 {
@@ -13,25 +12,7 @@ bool IsAnyKeyPressed()
 }
 
 void ClientGUI::drawLoginRoom(){
-
-    char IP[MAX_INPUT_CHARS + 1] = "\0";      // NOTE: One extra space required for null terminator char '\0'
-    char PORT[MAX_INPUT_CHARS + 1] = "\0";      // NOTE: One extra space required for null terminator char '\0'
-    
-    int letterCountIP = 0;
-    int letterCountPORT = 0;
-
-    Rectangle IPBox = { 100, 150, 225, 50 };
-    Rectangle PORTBox = { 475, 150, 225, 50 };
-
-    bool mouseOnIPBox = false;
-    bool mouseOnPORTBox = false;
-
-    int framesCounterIP = 0;
-    int framesCounterPORT = 0;
-
-
-    Rectangle buttonLogin = { 300, 250, 200, 50 };
-    const char* buttonLoginText = "LOGIN";
+    button buttonLogin("LOGIN", (Rectangle){ 300, 250, 200, 50 });
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -39,85 +20,55 @@ void ClientGUI::drawLoginRoom(){
     {
         // Update
         //----------------------------------------------------------------------------------
-        if (CheckCollisionPointRec(GetMousePosition(), IPBox)) mouseOnIPBox = true;
-        else mouseOnIPBox = false;
+        bool doesHaveMouseOn = false;
+        for(int i = 0 ; i < 2 ; i++){
+            if(input::doesMouseOn(INPUT_LOGIN[i].box))
+                INPUT_LOGIN[i].mouseOn = true, doesHaveMouseOn = true;
+            else INPUT_LOGIN[i].mouseOn = false;
 
-        if (CheckCollisionPointRec(GetMousePosition(), PORTBox)) mouseOnPORTBox = true;
-        else mouseOnPORTBox = false;
+            if(INPUT_LOGIN[i].mouseOn){
+                SetMouseCursor(MOUSE_CURSOR_IBEAM);
 
-        if (mouseOnIPBox)
-        {
-            // Set the window's cursor to the I-Beam
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
+                // Get char pressed (unicode character) on the queue
+                int key = GetCharPressed();
 
-            // Get char pressed (unicode character) on the queue
-            int key = GetCharPressed();
+                // Check if more characters have been pressed on the same frame
+                while (key > 0)
+                {   
+                    
+                    // NOTE: Only allow keys in range [32..125]
 
-            // Check if more characters have been pressed on the same frame
-            while (key > 0)
-            {   
-                
-                // NOTE: Only allow keys in range [32..125]
-                
-                if ((key >= 32) && (key <= 125) && (letterCountIP < MAX_INPUT_CHARS))
-                {
-                    IP[letterCountIP] = (char)key;
-                    IP[letterCountIP+1] = '\0'; // Add null terminator at the end of the string.
-                    letterCountIP++;
+                    if ((key >= 32) && (key <= 125) && (INPUT_LOGIN[i].letterCount < input::MAX_INPUT_CHARS))
+                    {
+                        INPUT_LOGIN[i].inputValue[INPUT_LOGIN[i].letterCount] = (char)key;
+                        INPUT_LOGIN[i].inputValue[INPUT_LOGIN[i].letterCount + 1] = '\0'; // Add null terminator at the end of the string.
+                        INPUT_LOGIN[i].letterCount++;
+                    }
+
+                    key = GetCharPressed();  // Check next character in the queue
                 }
 
-                key = GetCharPressed();  // Check next character in the queue
-            }
-
-            if (IsKeyDown(KEY_BACKSPACE))
-            {   
-                letterCountIP--;
-                if (letterCountIP < 0) letterCountIP = 0;
-                IP[letterCountIP] = '\0';
-            }
-        }
-        else if (mouseOnPORTBox)
-        {
-            // Set the window's cursor to the I-Beam
-            SetMouseCursor(MOUSE_CURSOR_IBEAM);
-
-            // Get char pressed (unicode character) on the queue
-            int key = GetCharPressed();
-
-            // Check if more characters have been pressed on the same frame
-            while (key > 0)
-            {
-                // NOTE: Only allow keys in range [32..125]
-                if ((key >= 32) && (key <= 125) && (letterCountPORT < MAX_INPUT_CHARS))
-                {
-                    PORT[letterCountPORT] = (char)key;
-                    PORT[letterCountPORT+1] = '\0'; // Add null terminator at the end of the string.
-                    letterCountPORT++;
+                if (IsKeyDown(KEY_BACKSPACE))
+                {   
+                    INPUT_LOGIN[i].letterCount--;
+                    if (INPUT_LOGIN[i].letterCount < 0) INPUT_LOGIN[i].letterCount = 0;
+                    INPUT_LOGIN[i].inputValue[INPUT_LOGIN[i].letterCount] = '\0';
                 }
 
-                key = GetCharPressed();  // Check next character in the queue
-            }
+                INPUT_LOGIN[i].framesCounter++;
 
-            if (IsKeyDown(KEY_BACKSPACE))
-            {
-                letterCountPORT--;
-                if (letterCountPORT < 0) letterCountPORT = 0;
-                PORT[letterCountPORT] = '\0';
+            }else{
+                INPUT_LOGIN[i].framesCounter = 0;
             }
         }
 
-        else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-
-        if (mouseOnIPBox) framesCounterIP++;
-        else framesCounterIP = 0;
-
-        if (mouseOnPORTBox) framesCounterPORT++;
-        else framesCounterPORT = 0;
-
-        if (IsMenuItemPressed(buttonLogin)) {
+        if(!doesHaveMouseOn)
+            SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+        if (IsMenuItemPressed(buttonLogin.rect)) {
             bool flag = false;
-            cf = new clientFunction(IP, PORT, flag);
+            cf = new clientFunction(INPUT_LOGIN[0].inputValue, INPUT_LOGIN[1].inputValue, flag);
             if(flag) {
+                doesLoginSuccess = true;
                 break;
             }
         }
@@ -132,19 +83,16 @@ void ClientGUI::drawLoginRoom(){
             DrawText("IP", 100, 110, 40, GRAY);
             DrawText("PORT", 475, 110, 40, GRAY);
             
-            DrawRectangleRec(IPBox, LIGHTGRAY);
-            DrawRectangleRec(PORTBox, LIGHTGRAY);
+            for(int i = 0 ; i < 2 ; i++){
+                DrawRectangleRec(INPUT_LOGIN[i].box, LIGHTGRAY);
+                if(INPUT_LOGIN[i].mouseOn){
+                    DrawRectangleLines((int)INPUT_LOGIN[i].box.x, (int)INPUT_LOGIN[i].box.y, (int)INPUT_LOGIN[i].box.width, (int)INPUT_LOGIN[i].box.height, RED);
+                }else DrawRectangleLines((int)INPUT_LOGIN[i].box.x, (int)INPUT_LOGIN[i].box.y, (int)INPUT_LOGIN[i].box.width, (int)INPUT_LOGIN[i].box.height, DARKGRAY);
+                DrawText(INPUT_LOGIN[i].inputValue, (int)INPUT_LOGIN[i].box.x + 5, (int)INPUT_LOGIN[i].box.y + 10, 30, MAROON);
+            }
 
-            if (mouseOnIPBox) DrawRectangleLines((int)IPBox.x, (int)IPBox.y, (int)IPBox.width, (int)IPBox.height, RED);
-            else DrawRectangleLines((int)IPBox.x, (int)IPBox.y, (int)IPBox.width, (int)IPBox.height, DARKGRAY);
+            DrawMenuItem(buttonLogin.rect, buttonLogin.label);
 
-            if (mouseOnPORTBox) DrawRectangleLines((int)PORTBox.x, (int)PORTBox.y, (int)PORTBox.width, (int)PORTBox.height, RED);
-            else DrawRectangleLines((int)PORTBox.x, (int)PORTBox.y, (int)PORTBox.width, (int)PORTBox.height, DARKGRAY);
-
-            DrawText(IP, (int)IPBox.x + 5, (int)IPBox.y + 10, 30, MAROON);
-            DrawText(PORT, (int)PORTBox.x + 5, (int)PORTBox.y + 10, 30, MAROON);
-
-            DrawMenuItem(buttonLogin, buttonLoginText);
         EndDrawing();
         //----------------------------------------------------------------------------------
     }

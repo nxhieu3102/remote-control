@@ -37,54 +37,52 @@ void clientFunction::main_menu()
 	chat();
 }
 
-bool clientFunction::receiveMessage(string fileName)
+bool clientFunction::receiveMessage(string fileName, string& res)
 {
-	char temp[20];
-	memset(&temp, 0, sizeof(temp));
-	// this->receive(sockfd, (char)&temp, sizeof(temp), 0);
-	recv(clientSd, temp, sizeof(temp), 0);
-	int totalDataSize = atoi(temp);
-	fflush(stdin);
-	std::cout << "totalDataSize: " << totalDataSize << std::endl;
-	fflush(stdin);
+    char temp[20];
+    memset(&temp, 0, sizeof(temp));
+    recv(clientSd, temp, sizeof(temp), 0);
+    int totalDataSize = atoi(temp);
 
-	int bytes_received = 0;
-	int bytes_to_receive = totalDataSize;
+    int bytes_received = 0;
+    int bytes_to_receive = totalDataSize;
 
-	while (bytes_received < totalDataSize)
-	{
-		// char temp = (char*)malloc(1024);
-		char temp[1025] = {0};
-		int bytes_received_now = recv(clientSd, temp, 1024, 0);
-		if (bytes_received_now == -1)
-		{
-			std::cout << "error!\n";
-			exit(1);
-		}
-		temp[1024] = '\0';
-		// fwrite(temp,sizeof(unsigned char),bytes_received_now,fd);
+    while (bytes_received < totalDataSize)
+    {
+        // char temp = (char)malloc(1024);
+        char temp[1025] = {0};
+        int bytes_received_now = recv(clientSd, temp, 1024, 0);
+        if (bytes_received_now == -1)
+        {
+            std::cout << "error!\n";
+            exit(1);
+        }
+        temp[1024] = '\0';
+        // fwrite(temp,sizeof(unsigned char),bytes_received_now,fd);
 
-		if (fileName != "")
-		{
-			// cout << "oke";
-			FILE *fo = fopen(fileName.c_str(), "ab");
-			if (!fo)
-			{
-				cout << "Can't open file " << fileName << "\n";
-				return 0;
-			}
-			fwrite(temp, sizeof(char), bytes_received_now, fo);
-			fclose(fo);
-		}
-		else
-			cout << temp;
+        if (fileName != "")
+        {
+            // cout << "oke";
+            FILE* fo= fopen(fileName.c_str(), "ab");
+            if (!fo)
+            {
+                cout << "Can't open file " << fileName << "\n";
+                return 0;
+            }
+            fwrite(temp, sizeof(char), bytes_received_now, fo);
+            fclose(fo);
+        }
+        else {
+            // string s;
+            res += (string)temp;
+        }
 
-		bytes_received += bytes_received_now;
-		// cout << "\n";
-		// cout << bytes_received_now << " meomeo\n" ;
-		// free(temp);
-	}
-	return bytes_received == totalDataSize;
+        bytes_received += bytes_received_now;
+        // cout << "\n";
+        // cout << bytes_received_now << " meomeo\n" ;
+        // free(temp);
+    }
+    return bytes_received == totalDataSize;
 }
 
 bool clientFunction::receiveKeyPress(int client_Sd)
@@ -170,101 +168,101 @@ bool clientFunction::receiveKeyPress(int client_Sd)
 
 void clientFunction::chat()
 {
-	// take the message
-	int n = 0;
-	struct timeval start1, end1;
-	gettimeofday(&start1, NULL);
-	int c = 1;
-	// create a message buffer
-	char msg[100];
-	while (1)
-	{
+	// // take the message
+	// int n = 0;
+	// struct timeval start1, end1;
+	// gettimeofday(&start1, NULL);
+	// int c = 1;
+	// // create a message buffer
+	// char msg[100];
+	// while (1)
+	// {
 
-		memset(&msg, 0, sizeof(msg)); // clear the buffer
-		c++;
-		fflush(stdin);
-		cout << "\n\t\t Client: ";
+	// 	memset(&msg, 0, sizeof(msg)); // clear the buffer
+	// 	c++;
+	// 	fflush(stdin);
+	// 	cout << "\n\t\t Client: ";
 
-		n = 0;
-		fflush(stdin);
+	// 	n = 0;
+	// 	fflush(stdin);
 
-		string data;
-		getline(std::cin, data);
-		memset(msg, 0, sizeof msg);
+	// 	string data;
+	// 	getline(std::cin, data);
+	// 	memset(msg, 0, sizeof msg);
 
-		strcpy(msg, data.c_str());
-		msg[strlen(msg)] = '\0';
+	// 	strcpy(msg, data.c_str());
+	// 	msg[strlen(msg)] = '\0';
 
-		// cout << msg << " " << strlen(msg) << "\n";
+	// 	// cout << msg << " " << strlen(msg) << "\n";
 
-		if (strcmp(msg, "exit") == 0) // check if the message equals "exit" then exit
-		{
-			cout << "EXIT from Server.";
-			send(clientSd, (char *)&msg, strlen(msg), 0);
-			break;
-		}
+	// 	if (strcmp(msg, "exit") == 0) // check if the message equals "exit" then exit
+	// 	{
+	// 		cout << "EXIT from Server.";
+	// 		send(clientSd, (char *)&msg, strlen(msg), 0);
+	// 		break;
+	// 	}
 
-		send(clientSd, (char *)&msg, strlen(msg), 0);
+	// 	send(clientSd, (char *)&msg, strlen(msg), 0);
 
-		if (strlen(msg) == 0)
-			break;
+	// 	if (strlen(msg) == 0)
+	// 		break;
 
-		if(!strcmp(msg, "1") || !strcmp(msg, "6"))
-		{
-			fflush(stdin);
-			if(!strcmp(msg, "1"))
-				cout << "Type the name of app that you want to start: ";
-			else
-				cout << "Type the name of app that you want to stop: ";
-			fflush(stdin);
+	// 	if(!strcmp(msg, "1") || !strcmp(msg, "6"))
+	// 	{
+	// 		fflush(stdin);
+	// 		if(!strcmp(msg, "1"))
+	// 			cout << "Type the name of app that you want to start: ";
+	// 		else
+	// 			cout << "Type the name of app that you want to stop: ";
+	// 		fflush(stdin);
 				
-			getline(std::cin, data);
-			memset(msg, 0, sizeof msg);
+	// 		getline(std::cin, data);
+	// 		memset(msg, 0, sizeof msg);
 
-			strcpy(msg, data.c_str());
-			msg[strlen(msg)] = '\0';
+	// 		strcpy(msg, data.c_str());
+	// 		msg[strlen(msg)] = '\0';
 
-			send(clientSd, (char *)&msg, strlen(msg), 0);
-			if (receiveMessage("") == 0)
-				break;
-		}
-		else if (strcmp(msg, "4") == 0)
-		{
-			receiveKeyPress(clientSd);
-			cout << "\n Press any key to continue.";
-			getchar();
-		}
-		else if (strcmp(msg, "3") == 0)
-		{
-			time_t current_time = time(NULL);
-			struct tm *local_time = localtime(&current_time);
+	// 		send(clientSd, (char *)&msg, strlen(msg), 0);
+	// 		if (receiveMessage("", "") == 0)
+	// 			break;
+	// 	}
+	// 	else if (strcmp(msg, "4") == 0)
+	// 	{
+	// 		receiveKeyPress(clientSd);
+	// 		cout << "\n Press any key to continue.";
+	// 		getchar();
+	// 	}
+	// 	else if (strcmp(msg, "3") == 0)
+	// 	{
+	// 		time_t current_time = time(NULL);
+	// 		struct tm *local_time = localtime(&current_time);
 
-			int year = local_time->tm_year + 1900;
-			int month = local_time->tm_mon + 1;
-			int day = local_time->tm_mday;
-			int hour = local_time->tm_hour;
-			int minute = local_time->tm_min;
+	// 		int year = local_time->tm_year + 1900;
+	// 		int month = local_time->tm_mon + 1;
+	// 		int day = local_time->tm_mday;
+	// 		int hour = local_time->tm_hour;
+	// 		int minute = local_time->tm_min;
 
-			string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".bmp";
-			cout << "Save to file name: " << filename << "\n";
-			if (receiveMessage(filename) == 0)
-				break;
-		}
-		else if (receiveMessage("") == 0)
-			break;
+	// 		string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".bmp";
+	// 		cout << "Save to file name: " << filename << "\n";
+	// 		if (receiveMessage(filename, "") == 0)
+	// 			break;
+	// 	}
+	// 	else if (receiveMessage("", "") == 0)
+	// 		break;
 
-		// cout << "Press any key to continue...";
-		// getchar();
-	}
+	// 	// cout << "Press any key to continue...";
+	// 	// getchar();
+	// }
 
-	gettimeofday(&end1, NULL);
-	cout << "********Session Ended********" << endl;
-	cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
-	cout << "Connection Closed" << endl;
+	// gettimeofday(&end1, NULL);
+	// cout << "********Session Ended********" << endl;
+	// cout << "Elapsed Time: " << (end1.tv_sec - start1.tv_sec) << " seconds" << endl;
+	// cout << "Connection Closed" << endl;
 
-	cout << "\n\n Press any key to continue.";
-	string temp;
-	getline(cin, temp);
+	// cout << "\n\n Press any key to continue.";
+	// string temp;
+	// getline(cin, temp);
 }
 
 clientFunction ::~clientFunction()

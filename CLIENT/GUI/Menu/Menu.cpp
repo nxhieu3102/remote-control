@@ -3,18 +3,15 @@
 void ClientGUI::drawMenuRoom(){   
     while (!WindowShouldClose()) {
     	Color buttonColor = RED;
-        Color pressedButonColor = RED;
-        int pressedButton = -1;
         
         for(int i = 0 ; i < 5 ; i++){
-            if(IsMenuItemPressed(MENU_BUTTON[i].rect))
-                pressedButton = i;
+            if(IsMenuItemPressed(MENU_BUTTON[i].rect)){
+                if(MENU_BUTTON[i].callback != NULL)
+                    MENU_BUTTON[i].callback(*this);
+            }
         }
-
         
-        if(pressedButton != -1){
-            pressedButonColor = GRAY;
-        }
+
 
         BeginDrawing();
             ClearBackground(WHITE);
