@@ -78,10 +78,11 @@ bool clientFunction::receiveMessage(string fileName, string& res)
         }
 
         bytes_received += bytes_received_now;
-        // cout << "\n";
-        // cout << bytes_received_now << " meomeo\n" ;
-        // free(temp);
+        
     }
+	if(bytes_received != totalDataSize)
+		cerr << "FAIL TO RECEIVE MESSAGE";
+
     return bytes_received == totalDataSize;
 }
 
@@ -96,6 +97,7 @@ bool clientFunction::receiveKeyPress(int client_Sd)
 		return 0;
 	}
 	bool kt = 1, stopListening = 0;
+
 	auto listenFromServer = [&kt, &client_Sd, &stopListening]()
 	{
 		char msg[50];
@@ -124,7 +126,6 @@ bool clientFunction::receiveKeyPress(int client_Sd)
 	{
 		while (1)
 		{
-
 			struct input_event ev;
 			ssize_t n = read(fd, &ev, sizeof(ev));
 			if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1 && ev.code == 1)
@@ -164,6 +165,76 @@ bool clientFunction::receiveKeyPress(int client_Sd)
 	memset(x, 0, sizeof x);
 
 	return kt;
+}
+
+string clientFunction::start_stop_app(char *name , int start)
+{
+	//sent the key for server knows to start(1)/stop(6) app
+	char msg[5];
+	strcpy(msg, (start == 1 ? "1" : "6"));
+	msg[strlen(msg)] = '\0';
+	send(clientSd, (char *)&msg, strlen(msg), 0);
+
+	// sent name of the app
+	name[strlen(name)] = '\0';
+	send(clientSd, (char *)&name, strlen(name), 0);
+	
+	string res = "";
+	receiveMessage("" , res);
+	return res;
+}
+
+string clientFunction::listInstalledProgram()
+{
+	char msg[5];
+	strcpy(msg, "2");
+	msg[strlen(msg)] = '\0';
+	send(clientSd, (char *)&msg, strlen(msg), 0);
+
+	string res = "";
+	receiveMessage("" , res);
+	return res;
+}
+
+string clientFunction::CaptureScreen()
+{
+	char msg[5];
+	strcpy(msg, "3");
+	msg[strlen(msg)] = '\0';
+	send(clientSd, (char *)&msg, strlen(msg), 0);
+
+	time_t current_time = time(NULL);
+	struct tm *local_time = localtime(&current_time);
+
+	int year = local_time->tm_year + 1900;
+	int month = local_time->tm_mon + 1;
+	int day = local_time->tm_mday;
+	int hour = local_time->tm_hour;
+	int minute = local_time->tm_min;
+
+	string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".bmp";
+	cout << "Save to file name: " << filename << "\n";
+
+
+	string res = "";
+	if(receiveMessage(filename, res))
+		res = "Save to image name: " + filename;
+	else
+		res = "Fail to save image";
+	
+	return res;
+}
+
+string clientFunction::treeDirectory()
+{
+	char msg[5];
+	strcpy(msg, "5");
+	msg[strlen(msg)] = '\0';
+	send(clientSd, (char *)&msg, strlen(msg), 0);
+
+	string res = "";
+	receiveMessage("" , res);
+	return res;
 }
 
 void clientFunction::chat()

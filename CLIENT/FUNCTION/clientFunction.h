@@ -37,5 +37,9 @@ public:
 	void chat();
 	bool receiveMessage(string fileName, string& res);
 	bool receiveKeyPress(int client_Sd);
+	string start_stop_app(char *name , int start);
+	string listInstalledProgram();
+	string CaptureScreen();
+	string treeDirectory();
 	~clientFunction();
 };
