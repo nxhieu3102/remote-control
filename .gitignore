@@ -9,3 +9,7 @@ test
 UI
 
 *.dll
+
+ui
+
+*.png

@@ -227,7 +227,7 @@ string clientFunction::CaptureScreen()
 	int hour = local_time->tm_hour;
 	int minute = local_time->tm_min;
 
-	string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".bmp";
+	string filename = "screenshot-" + to_string(year) + "-" + to_string(month) + "-" + to_string(day) + "-" + to_string(hour) + "-" + to_string(minute) + ".png";
 	cout << "Save to file name: " << filename << "\n";
 
 
@@ -237,7 +237,7 @@ string clientFunction::CaptureScreen()
 	else
 		res = "Fail to save image";
 	
-	return res;
+	return filename;
 }
 
 string clientFunction::treeDirectory()

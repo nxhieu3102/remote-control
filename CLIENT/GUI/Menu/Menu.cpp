@@ -10,7 +10,9 @@ void ClientGUI::drawMenuRoom(){
         for(int i = 0 ; i < 5 ; i++){
             if(IsMenuItemPressed(MENU_BUTTON[i].rect)){
                 if(strcmp("Capture Screen", MENU_BUTTON[i].label) == 0){
-                    cf->CaptureScreen();
+                    roomCaptureScreen = true;
+                    doesPressed = true;
+                    cout << "Capture Screen\n";
                 }
                 if(strcmp("List all app", MENU_BUTTON[i].label) == 0){
                     roomListApp = true;

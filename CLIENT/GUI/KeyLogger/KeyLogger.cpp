@@ -31,6 +31,17 @@ void ClientGUI::drawKeyLoggerRoom() {
             cout << "press\n";
             backToMenu = true;
             roomKeyLogger = false;
+
+            char msg[10];
+            strcpy(msg, "exit");
+            msg[strlen(msg)] = '\0';
+            
+
+            send(client_Sd, (char *)&msg, strlen(msg), 0);
+            
+            char temp[100];
+            memset(temp, 0, sizeof(temp));
+            int bytesReceived = recv(client_Sd, (char *)&temp, sizeof(temp), 0);
             break;
         }
 

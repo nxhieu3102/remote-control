@@ -34,6 +34,8 @@ void ClientGUI::start(){
                 drawTreeFolderRoom();
             if(roomKeyLogger)
                 drawKeyLoggerRoom();
+            if(roomCaptureScreen)
+                drawCaptureScreenRoom();
             if(exit)
                 break;
         }

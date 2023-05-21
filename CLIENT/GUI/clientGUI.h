@@ -101,7 +101,7 @@ public:
     void drawListProcessRoom();
     void drawTreeFolderRoom();
     void drawKeyLoggerRoom();
-    
+    void drawCaptureScreenRoom();
 
     void DrawMenuItem(Rectangle rect, const char* text, Color buttonColor = GRAY, int fontSize = 30);
     bool IsMenuItemPressed(Rectangle rect);

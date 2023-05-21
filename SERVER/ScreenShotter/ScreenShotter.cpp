@@ -3,10 +3,10 @@
 bool ScreenShot(char *&res , int &maxLength)
 {
     const char *current_dir = ".";
-    string file_path = current_dir + string("/shot.bmp");
+    string file_path = current_dir + string("/shot.png");
     system(("gnome-screenshot --file=" + file_path).c_str());
 
-    FILE *bmp_file = fopen("shot.bmp", "rb");
+    FILE *bmp_file = fopen("shot.png", "rb");
     if (!bmp_file)
     {
         return false;
