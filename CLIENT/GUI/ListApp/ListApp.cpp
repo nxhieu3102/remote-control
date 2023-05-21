@@ -21,12 +21,12 @@ void ClientGUI::drawListAppRoom() {
 
     int scrollOffset = 0;
 
-    int maxScrollOffset = MeasureText(res_char, 40);
+    int maxScrollOffset = MeasureText(res_char, 30);
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
     const Font font = LoadFont("jupiter_crash.png");
     
 
-    const button back_button = button("BACK", (Rectangle){1450, 0, 150, 50});
+    const button back_button = button("BACK", (Rectangle){1350, 0, 150, 50});
 
      while (!WindowShouldClose()) {
         if(input::doesMouseOn(start_app_input.box)) doesMouseOnStartInput = true, doesHaveMouseOn = true;
@@ -138,7 +138,7 @@ void ClientGUI::drawListAppRoom() {
             
             // Draw the text with the scrolling offset
             DrawTextEx(font, res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
-                       40, 3, BLACK);
+                       30, 3, BLACK);
             
             // Disable the scissor mode to draw outside the rectangle
             EndScissorMode();

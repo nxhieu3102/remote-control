@@ -1,7 +1,7 @@
 #include "TreeFolder.h"
 
 #define RECTANGLE_WIDTH 800
-#define RECTANGLE_HEIGHT 800
+#define RECTANGLE_HEIGHT 650
 #define SCROLL_SPEED 50
 
 void ClientGUI::drawTreeFolderRoom() {
@@ -9,12 +9,11 @@ void ClientGUI::drawTreeFolderRoom() {
 
     const char *res_char = res.c_str();
     int scrollOffset = 0;
-    int maxScrollOffset = MeasureText(res_char, 20);
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
     const Font font = LoadFont("jupiter_crash.png");
     
 
-    const button back_button = button("BACK", (Rectangle){1350, 0, 250, 50});
+    const button back_button = button("BACK", (Rectangle){1350, 0, 150, 50});
 
      while (!WindowShouldClose()) {
         scrollOffset -= GetMouseWheelMove() * SCROLL_SPEED;

@@ -3,6 +3,8 @@
 #include "../FUNCTION/clientFunction.h"
 #include <string>
 #include <string.h>
+#include <sys/select.h>
+
 class button;
 class input;
 class ClientGUI;
@@ -104,6 +106,6 @@ public:
     void DrawMenuItem(Rectangle rect, const char* text, Color buttonColor = GRAY, int fontSize = 30);
     bool IsMenuItemPressed(Rectangle rect);
 
-    static const int HEIGHT = 900;
-    static const int WIDTH = 1600;    
+    static const int HEIGHT = 700;
+    static const int WIDTH = 1500;    
 };
