@@ -99,7 +99,6 @@ public:
     void drawListProcessRoom();
     void drawTreeFolderRoom();
     void drawKeyLoggerRoom();
-    void drawCaptureSreenRoom();
     
 
     void DrawMenuItem(Rectangle rect, const char* text, Color buttonColor = GRAY, int fontSize = 30);

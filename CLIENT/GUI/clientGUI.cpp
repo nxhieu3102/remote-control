@@ -33,8 +33,6 @@ void ClientGUI::start(){
                 drawListProcessRoom();
             if(roomTreeFolder)
                 drawTreeFolderRoom();
-            if(roomCaptureScreen)
-                drawCaptureSreenRoom();
             if(exit)
                 break;
         }

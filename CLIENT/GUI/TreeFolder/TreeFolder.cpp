@@ -38,7 +38,7 @@ void ClientGUI::drawTreeFolderRoom() {
             BeginScissorMode(textRectangle.x, textRectangle.y, textRectangle.width, textRectangle.height);
             
             // Draw the text with the scrolling offset
-            DrawTextEx(font, res_char, (Vector2){ textRectangle.x, textRectangle.y - scrollOffset },
+            DrawTextEx(font, res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
                        20, 3, BLACK);
             
             // Disable the scissor mode to draw outside the rectangle
