@@ -152,13 +152,13 @@ void serverFunction::TransferData()
         {
             printf("\nClient: ");
 
-            int length = 100;
+            int length = 1000;
             char *msg = (char *)malloc(length);
             memset(msg , 0 , sizeof msg);
 
             recv(new_fd, msg, length , 0);
 
-            // cout << msg << " " << strlen(msg) << "\n";
+            cout << msg << " " << strlen(msg) << "\n";
 
             if (strcmp(msg, "exit") == 0)
             {
@@ -170,13 +170,14 @@ void serverFunction::TransferData()
             int maxLength = 100;
             char *res = (char *)malloc(maxLength);
             if (strcmp(msg, "1") == 0) // Start app
-            {
+            {   
                 memset(msg , 0 , sizeof msg);
                 recv(new_fd, msg, length , 0);
 
-                string temp(msg);
+                cout << msg << "\n";
+                string temp(msg);   
 
-                cout << "Start app " << msg << "\n";
+                cout << "Start app " << temp << "\n";
                 if (!startApp(res , temp))
                 {
                     strcpy(res, "fail to run the process\n");

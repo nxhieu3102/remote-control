@@ -177,7 +177,8 @@ string clientFunction::start_stop_app(char *name , int start)
 
 	// sent name of the app
 	name[strlen(name)] = '\0';
-	send(clientSd, (char *)&name, strlen(name), 0);
+	cout << name << "\n";
+	send(clientSd, name, strlen(name), 0);
 	
 	string res = "";
 	receiveMessage("" , res);
@@ -201,7 +202,7 @@ string clientFunction::CaptureScreen()
 	char msg[5];
 	strcpy(msg, "3");
 	msg[strlen(msg)] = '\0';
-	send(clientSd, (char *)&msg, strlen(msg), 0);
+	send(clientSd, (char*)&msg, strlen(msg), 0);
 
 	time_t current_time = time(NULL);
 	struct tm *local_time = localtime(&current_time);

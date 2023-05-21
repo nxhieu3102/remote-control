@@ -11,8 +11,8 @@ bool getInstalledApp(char *&buffer)
 
     //get installed apps
     // vector<string> packages;
-    FILE *pipe = popen("apt-mark showmanual", "r");
-
+    FILE *pipe = popen("find / -name '*.desktop' 2>/dev/null -printf '%f\n' | sort | uniq | grep '.desktop$'", "r");
+    
 
     if (!pipe)
     {
