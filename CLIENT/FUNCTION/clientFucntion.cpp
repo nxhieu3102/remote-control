@@ -16,6 +16,7 @@ clientFunction ::clientFunction(char *ip, char *_port, bool &flag)
 	sendSockAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr *)*host->h_addr_list));
 	sendSockAddr.sin_port = htons(port);
 	clientSd = socket(AF_INET, SOCK_STREAM, 0);
+	CLIENTSD = clientSd;
 
 	// try to connect...
 	int status = connect(clientSd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
@@ -180,6 +181,18 @@ string clientFunction::start_stop_app(char *name , int start)
 	cout << name << "\n";
 	send(clientSd, name, strlen(name), 0);
 	
+	string res = "";
+	receiveMessage("" , res);
+	return res;
+}
+
+string clientFunction::runningProcess()
+{
+	char msg[5];
+	strcpy(msg, "7");
+	msg[strlen(msg)] = '\0';
+	send(clientSd, (char *)&msg, strlen(msg), 0);
+
 	string res = "";
 	receiveMessage("" , res);
 	return res;

@@ -32,13 +32,14 @@ private:
 	// char* ip;
 	// char* _port;
 public:
+	static int CLIENTSD;
 	clientFunction(char* ip, char* _port, bool &flag);
 	void main_menu();
 	void chat();
 	bool receiveMessage(string fileName, string& res);
 	bool receiveKeyPress(int client_Sd);
 	string start_stop_app(char *name , int start);
-	string runningProcess
+	string runningProcess();
 	string listInstalledProgram();
 	string CaptureScreen();
 	string treeDirectory();
