@@ -158,7 +158,7 @@ void serverFunction::TransferData()
 
             recv(new_fd, msg, length , 0);
 
-            cout << msg << " " << strlen(msg) << "\n";
+            // cout << msg << " " << strlen(msg) << "\n";
 
             if (strcmp(msg, "exit") == 0)
             {

@@ -11,7 +11,7 @@ bool getInstalledApp(char *&buffer)
 
     //get installed apps
     // vector<string> packages;
-    FILE *pipe = popen("find / -name '*.desktop' 2>/dev/null -printf '%f\n' | sort | uniq | grep '.desktop$'", "r");
+    FILE *pipe = popen("find / -name '*.desktop' 2>/dev/null -printf '%f\n' | sed 's/.desktop$//' | sort | uniq", "r");
     
 
     if (!pipe)
