@@ -2,7 +2,7 @@
 #include "raylib.h"
 #include "../FUNCTION/clientFunction.h"
 #include <string>
-
+#include <string.h>
 class button;
 class input;
 class ClientGUI;
@@ -17,19 +17,12 @@ public:
         rect = _rect;
     }
 
-    button(const char* _label, Rectangle _rect, void(*_callback)(ClientGUI&)) {
-        label = new char[strlen(_label) + 1];
-        strcpy(label, _label);
 
-        rect = _rect;
-        callback = _callback;
-    }
 
     ~button() {
         delete label;
     }
 
-    void (*callback)(ClientGUI&) = NULL;
     char* label;
     Rectangle rect;
 };
@@ -66,11 +59,15 @@ private:
     clientFunction* cf = NULL;
     Texture2D background;
     bool doesLoginSuccess = false;
+
     bool backToMenu = false;
+    
     bool roomListApp = false;
     bool roomListProcess = false;
     bool roomKeyLogger = false;
     bool roomTreeFolder = false;
+    bool roomCaptureScreen = false;
+
     bool exit = false;
 
     
@@ -102,12 +99,12 @@ public:
     void drawListProcessRoom();
     void drawTreeFolderRoom();
     void drawKeyLoggerRoom();
-
+    void drawCaptureSreenRoom();
     
 
     void DrawMenuItem(Rectangle rect, const char* text, Color buttonColor = GRAY, int fontSize = 30);
     bool IsMenuItemPressed(Rectangle rect);
 
-    static const int HEIGHT = 450;
-    static const int WIDTH = 800;    
+    static const int HEIGHT = 900;
+    static const int WIDTH = 1600;    
 };

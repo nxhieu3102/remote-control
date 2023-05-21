@@ -23,8 +23,18 @@ void ClientGUI::start(){
     if(doesLoginSuccess){
         drawMenuRoom();
         while(true){
+            if(backToMenu > 0) 
+                cout << "backToMenu: " << backToMenu << "\n";
             if(backToMenu)
                 drawMenuRoom();
+            if(roomListApp)
+                drawListAppRoom();
+            if(roomListProcess)
+                drawListProcessRoom();
+            if(roomTreeFolder)
+                drawTreeFolderRoom();
+            if(roomCaptureScreen)
+                drawCaptureSreenRoom();
             if(exit)
                 break;
         }
