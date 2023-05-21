@@ -25,15 +25,18 @@ Client will ask to process in server's system:
     + 3 : Capture the screen
     + 4 : Keylog
     + 5 : Browse the directory tree
+    + 7 : running processes
 
 -Server returns the message:
 
     + 1 : success or not
     + 6 : success or not
-    + 2 : Vector of string that saves the information of installed programs
+
+    + 2 : string that saves the information of installed programs
     + 3 : Image (file .png, .JPEG, ...)
     + 4 : Every characters on the keyboard from 'start command' to 'end command'
-    + 5 : Vector of string that saves the tree path
+    + 5 : string that saves the tree path
+    + 7 : string of running processes
 
 Login -> menu:
 - List process, Tree,  : Show a list

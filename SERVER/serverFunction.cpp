@@ -233,6 +233,15 @@ void serverFunction::TransferData()
                 maxLength = strlen(res);
         
             }
+            else if (strcmp(msg, "7") == 0) // list process
+            {
+                cout << "Running processes\n";
+                if (!getRunningProcess(res))
+                {
+                    strcpy(res, "fail to run the process\n");
+                }
+                maxLength = strlen(res);
+            }
             else
             {
                 fflush(stdin);
