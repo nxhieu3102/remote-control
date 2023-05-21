@@ -39,7 +39,6 @@ void ClientGUI::drawMenuRoom(){
         
         if(doesPressed) {
             backToMenu = false;
-            cout << "break";
             break;
         }
 

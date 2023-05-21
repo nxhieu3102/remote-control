@@ -31,7 +31,7 @@ void ClientGUI::drawLoginRoom(){
 
                 // Get char pressed (unicode character) on the queue
                 int key = GetCharPressed();
-
+                int keyPressed = GetKeyPressed();
                 // Check if more characters have been pressed on the same frame
                 while (key > 0)
                 {   
@@ -48,7 +48,7 @@ void ClientGUI::drawLoginRoom(){
                     key = GetCharPressed();  // Check next character in the queue
                 }
 
-                if (IsKeyDown(KEY_BACKSPACE))
+                if (keyPressed == 259)
                 {   
                     INPUT_LOGIN[i].letterCount--;
                     if (INPUT_LOGIN[i].letterCount < 0) INPUT_LOGIN[i].letterCount = 0;

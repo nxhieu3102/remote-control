@@ -13,7 +13,7 @@ void ClientGUI::drawKeyLoggerRoom() {
     cout << client_Sd << "\n";
     int scrollOffset = 0;
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
-    const Font font = LoadFont("jupiter_crash.png");
+    const Font font = LoadFont("pixelplay.png");
     const button back_button = button("BACK", (Rectangle){1350, 0, 150, 50});
 
     char msg[50];
@@ -56,7 +56,7 @@ void ClientGUI::drawKeyLoggerRoom() {
             DrawTexture(background, 0, 0, WHITE);
             DrawRectangleRec(textRectangle, LIGHTGRAY);
             BeginScissorMode(textRectangle.x, textRectangle.y, textRectangle.width, textRectangle.height);
-            DrawTextEx(font, res, (Vector2){textRectangle.x + 10, textRectangle.y - scrollOffset}, 20, 3, BLACK);
+            DrawTextEx(GetFontDefault(), res, (Vector2){textRectangle.x + 10, textRectangle.y - scrollOffset}, 20, 3, BLACK);
             EndScissorMode();
             DrawMenuItem(back_button.rect, back_button.label, RED, 20);
         }

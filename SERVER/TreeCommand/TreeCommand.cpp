@@ -128,12 +128,13 @@ bool TreeCommand(char* msg, char*& res, int& maxLength) {
     char* path = realpath(msg, NULL);
     char buff[3];
     strcpy(buff,"\n");
-
+    memset(res, 0 , sizeof res);
     concatenate(res,buff,maxLength);
     concatenate(res, path, maxLength);
     tree(res, maxLength, path, 4, 5, 0);
     // cout << strlen(res) << "\n" << res << "\n";
     
+    cout << res << "\n";
     free(path);
     return true;
 }

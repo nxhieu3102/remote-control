@@ -9,7 +9,7 @@ void ClientGUI::drawListProcessRoom() {
     int scrollOffset = 0;
     int maxScrollOffset = MeasureText(res_char, 20);
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
-    const Font font = LoadFont("jupiter_crash.png");
+    const Font font = LoadFont("pixelplay.png");
     
 
     const button back_button = button("BACK", (Rectangle){1350, 0, 250, 50});
@@ -36,7 +36,7 @@ void ClientGUI::drawListProcessRoom() {
             BeginScissorMode(textRectangle.x, textRectangle.y, textRectangle.width, textRectangle.height);
             
             // Draw the text with the scrolling offset
-            DrawTextEx(font, res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
+            DrawTextEx(GetFontDefault(), res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
                        20, 3, BLACK);
             
             // Disable the scissor mode to draw outside the rectangle

@@ -6,11 +6,11 @@
 
 void ClientGUI::drawTreeFolderRoom() {
     string res = cf->treeDirectory();
-
+    cout << res << "\n";
     const char *res_char = res.c_str();
     int scrollOffset = 0;
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
-    const Font font = LoadFont("jupiter_crash.png");
+    const Font font = LoadFont("pixelplay.png");
     
 
     const button back_button = button("BACK", (Rectangle){1350, 0, 150, 50});
@@ -37,7 +37,7 @@ void ClientGUI::drawTreeFolderRoom() {
             BeginScissorMode(textRectangle.x, textRectangle.y, textRectangle.width, textRectangle.height);
             
             // Draw the text with the scrolling offset
-            DrawTextEx(font, res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
+            DrawTextEx(GetFontDefault(), res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
                        20, 3, BLACK);
             
             // Disable the scissor mode to draw outside the rectangle

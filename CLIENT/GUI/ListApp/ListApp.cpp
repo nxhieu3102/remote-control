@@ -23,7 +23,7 @@ void ClientGUI::drawListAppRoom() {
 
     int maxScrollOffset = MeasureText(res_char, 30);
     const Rectangle textRectangle = { 50, 50, RECTANGLE_WIDTH, RECTANGLE_HEIGHT };
-    const Font font = LoadFont("jupiter_crash.png");
+    const Font font = LoadFont("pixelplay.png");
     
 
     const button back_button = button("BACK", (Rectangle){1350, 0, 150, 50});
@@ -40,6 +40,7 @@ void ClientGUI::drawListAppRoom() {
 
             // Get char pressed (unicode character) on the queue
             int key = GetCharPressed();
+            int keyPressed = GetKeyPressed();
 
             // Check if more characters have been pressed on the same frame
             while (key > 0)
@@ -57,7 +58,7 @@ void ClientGUI::drawListAppRoom() {
                 key = GetCharPressed();  // Check next character in the queue
             }
 
-            if (IsKeyDown(KEY_BACKSPACE))
+            if (keyPressed == 259)
             {   
                 start_app_input.letterCount--;
                 if (start_app_input.letterCount < 0) start_app_input.letterCount = 0;
@@ -74,7 +75,7 @@ void ClientGUI::drawListAppRoom() {
 
             // Get char pressed (unicode character) on the queue
             int key = GetCharPressed();
-
+            int keyPressed = GetKeyPressed();
             // Check if more characters have been pressed on the same frame
             while (key > 0)
             {   
@@ -91,7 +92,7 @@ void ClientGUI::drawListAppRoom() {
                 key = GetCharPressed();  // Check next character in the queue
             }
 
-            if (IsKeyDown(KEY_BACKSPACE))
+            if (keyPressed == 259)
             {   
                 end_app_input.letterCount--;
                 if (end_app_input.letterCount < 0) end_app_input.letterCount = 0;
@@ -137,7 +138,7 @@ void ClientGUI::drawListAppRoom() {
             BeginScissorMode(textRectangle.x, textRectangle.y, textRectangle.width, textRectangle.height);
             
             // Draw the text with the scrolling offset
-            DrawTextEx(font, res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
+            DrawTextEx(GetFontDefault(), res_char, (Vector2){ textRectangle.x + 10, textRectangle.y - scrollOffset },
                        30, 3, BLACK);
             
             // Disable the scissor mode to draw outside the rectangle
