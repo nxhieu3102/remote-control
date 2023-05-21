@@ -27,12 +27,12 @@ using namespace std;
 
 class clientFunction
 {
-private:
+public:
 	int clientSd;
 	// char* ip;
 	// char* _port;
 public:
-	static int CLIENTSD;
+	// static int CLIENTSD;
 	clientFunction(char* ip, char* _port, bool &flag);
 	void main_menu();
 	void chat();

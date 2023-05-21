@@ -2,7 +2,9 @@
 
 using namespace std;
 
-clientFunction ::clientFunction(char *ip, char *_port, bool &flag)
+int CLIENTSD = 0; 
+
+clientFunction::clientFunction(char *ip, char *_port, bool &flag)
 {	
 	// grab the IP address and port number
 	char *serverIp = ip;
@@ -17,7 +19,6 @@ clientFunction ::clientFunction(char *ip, char *_port, bool &flag)
 	sendSockAddr.sin_port = htons(port);
 	clientSd = socket(AF_INET, SOCK_STREAM, 0);
 	CLIENTSD = clientSd;
-
 	// try to connect...
 	int status = connect(clientSd, (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
 	if (status < 0)
@@ -87,7 +88,7 @@ bool clientFunction::receiveMessage(string fileName, string& res)
     return bytes_received == totalDataSize;
 }
 
-bool clientFunction::receiveKeyPress(int client_Sd)
+bool clientFunction::receiveKeyPress(int client_Sd = CLIENTSD)
 {
 	cout << "Catching key pressed until you press `ESC`\n";
 	const char *dev_path = "/dev/input/event1";

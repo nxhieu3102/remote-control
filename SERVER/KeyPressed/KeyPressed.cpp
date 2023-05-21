@@ -182,7 +182,7 @@ void catchKeyPressUntilESC(int &newSd)
                     
                     memset(&msg, 0, sizeof(msg));
                     strcpy(msg, temp.c_str());
-                    // cout << msg << "\n";
+                    cout << msg << "\n";
                     send(newSd, (char *)&msg, strlen(msg), 0);
                 }
             }

@@ -23,8 +23,7 @@ void ClientGUI::start(){
     if(doesLoginSuccess){
         drawMenuRoom();
         while(true){
-            if(backToMenu > 0) 
-                cout << "backToMenu: " << backToMenu << "\n";
+            cout << roomKeyLogger << "\n";
             if(backToMenu)
                 drawMenuRoom();
             if(roomListApp)
@@ -33,6 +32,8 @@ void ClientGUI::start(){
                 drawListProcessRoom();
             if(roomTreeFolder)
                 drawTreeFolderRoom();
+            if(roomKeyLogger)
+                drawKeyLoggerRoom();
             if(exit)
                 break;
         }
